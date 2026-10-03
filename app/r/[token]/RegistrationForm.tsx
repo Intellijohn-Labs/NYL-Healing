@@ -7,6 +7,7 @@ import { MAX_PATIENTS, ONLINE_PAYMENT_ENABLED, REGISTRATION_FEE } from '@/lib/co
 import type { Slot } from '@/lib/types';
 import PatientPass from '@/components/PatientPass';
 import SavePassButton from '@/components/SavePassButton';
+import { normalizePhone } from '@/lib/phone';
 import { register, type PatientInput, type RegisterResult } from './actions';
 
 type P = PatientInput;
@@ -88,7 +89,7 @@ function validatePatient(p: P, i: number, t: Dict, today: string): Errors {
     if (!p.guardianRelation) e[k('guardianRelation')] = t.required;
     else if (p.guardianRelation === 'other' && !p.guardianRelationOther.trim()) e[k('guardianRelationOther')] = t.required;
     if (!p.guardianPhone.trim()) e[k('guardianPhone')] = t.required;
-    else if (p.guardianPhone.replace(/\D/g, '').length < 10) e[k('guardianPhone')] = t.phoneInvalid;
+    else if (!normalizePhone(p.guardianPhone)) e[k('guardianPhone')] = t.phoneInvalid;
     if (!p.guardianConsent) e[k('guardianConsent')] = t.consentError;
   }
   if (!p.healthConcerns.trim()) e[k('healthConcerns')] = t.required;
@@ -453,8 +454,9 @@ export default function RegistrationForm({ token, lang, slots }: { token: string
                 autoComplete="tel"
                 dir="ltr"
                 value={p.guardianPhone}
-                onChange={(e) => setP(i, 'guardianPhone', e.target.value.replace(/[^\d+ ]/g, ''))}
+                onChange={(e) => setP(i, 'guardianPhone', e.target.value.replace(/[^\d+ ]/g, '').replace(/(?!^)\+/g, ''))}
                 maxLength={20}
+                placeholder="98765 43210"
                 {...aria(`${i}.guardianPhone`)}
               />
               {err(`${i}.guardianPhone`)}

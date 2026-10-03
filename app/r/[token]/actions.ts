@@ -4,6 +4,7 @@ import { db } from '@/lib/supabase';
 import { isLang } from '@/lib/i18n';
 import { MAX_PATIENTS, ONLINE_PAYMENT_ENABLED, REGISTRATION_FEE } from '@/lib/config';
 import { toPass, type RawPass } from '@/lib/pass';
+import { normalizePhone } from '@/lib/phone';
 import type { PassData } from '@/lib/types';
 
 export type PatientInput = {
@@ -63,7 +64,8 @@ export async function register(input: RegisterInput): Promise<RegisterResult> {
         !clip(p.healthConcerns, 4000) ||
         !/^\d{4}-\d{2}-\d{2}$/.test(clip(p.dob, 10)) ||
         !['male', 'female', 'other'].includes(p.gender) ||
-        !['self', 'child', 'parent', 'spouse', 'other'].includes(p.registeringFor),
+        !['self', 'child', 'parent', 'spouse', 'other'].includes(p.registeringFor) ||
+        (clip(p.guardianPhone, 20) !== '' && !normalizePhone(p.guardianPhone)),
     )
   ) {
     return { ok: false, error: 'INVALID_INPUT' };
@@ -77,7 +79,7 @@ export async function register(input: RegisterInput): Promise<RegisterResult> {
     city: clip(p.city, 120),
     guardian_name: clip(p.guardianName, 120),
     guardian_relation: relationOf(p),
-    guardian_phone: clip(p.guardianPhone, 20),
+    guardian_phone: normalizePhone(p.guardianPhone) ?? '',
     guardian_consent: p.guardianConsent === true,
     health_concerns: clip(p.healthConcerns, 4000),
     current_medicines: clip(p.currentMedicines, 2000),
