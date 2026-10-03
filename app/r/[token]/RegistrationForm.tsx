@@ -454,7 +454,27 @@ export default function RegistrationForm({ token, lang, slots }: { token: string
                 autoComplete="tel"
                 dir="ltr"
                 value={p.guardianPhone}
-                onChange={(e) => setP(i, 'guardianPhone', e.target.value.replace(/[^\d+ ]/g, '').replace(/(?!^)\+/g, ''))}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/[^\d+ ]/g, '').replace(/(?!^)\+/g, '');
+                  const key = `${i}.guardianPhone`;
+                  setPatients((list) => list.map((x, j) => (j === i ? { ...x, guardianPhone: v } : x)));
+                  // Once an error is showing, update it live: it clears as soon as the number is valid
+                  if (errors[key]) {
+                    setErrors((er) => {
+                      const n = { ...er };
+                      if (!v.trim() || normalizePhone(v)) delete n[key];
+                      else n[key] = t.phoneInvalid;
+                      return n;
+                    });
+                  }
+                }}
+                onBlur={(e) => {
+                  // Check as soon as the person leaves the field
+                  const v = e.target.value;
+                  if (v.trim() && !normalizePhone(v)) {
+                    setErrors((er) => ({ ...er, [`${i}.guardianPhone`]: t.phoneInvalid }));
+                  }
+                }}
                 maxLength={20}
                 placeholder="98765 43210"
                 {...aria(`${i}.guardianPhone`)}
