@@ -38,8 +38,9 @@ function ageFrom(dob: string | null) {
 
 export async function toPass(raw: RawPass, extra: { slot_date?: string; starts_at?: string | null; issued_at?: string } = {}): Promise<PassData> {
   const url = `${await siteUrl()}/p/${raw.pass_token}`;
-  // The QR holds the pass link. Reception's scanner reads the token from it.
-  const svg = await QRCode.toString(url, { type: 'svg', errorCorrectionLevel: 'M', margin: 0, color: { dark: '#13294B', light: '#0000' } });
+  // The QR holds only the pass code, not a link: a normal phone camera shows just the code,
+  // and reception's scanner page (/staff/scan) uses it to check the patient in.
+  const svg = await QRCode.toString(`NYLPASS:${raw.pass_token}`, { type: 'svg', errorCorrectionLevel: 'M', margin: 0, color: { dark: '#13294B', light: '#0000' } });
   return {
     patientCode: raw.patient_code,
     passToken: raw.pass_token,
