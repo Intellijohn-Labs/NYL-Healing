@@ -57,6 +57,8 @@ export type Dict = {
   registerMore: string;
   errGroupFull: string;
   patientLabel: string;
+  continueTo: string;
+  savedNote: string;
   centre: string;
   language: string;
   steps: [string, string, string];
@@ -119,6 +121,8 @@ export type Dict = {
 };
 
 const en: Dict = {
+  continueTo: 'Continue to Patient {n}',
+  savedNote: '{name} saved. Now enter the details of Patient {n}.',
   countTitle: 'Number of patients',
   countQ: 'How many people are you registering?',
   countHint: 'You can register up to 5 people together, for example your family. Everyone gets the same registration day.',
@@ -217,6 +221,8 @@ const en: Dict = {
 };
 
 const ml: Dict = {
+  continueTo: 'രോഗി {n}-ലേക്ക് തുടരുക',
+  savedNote: '{name} സേവ് ചെയ്തു. ഇനി രോഗി {n}-ന്റെ വിവരങ്ങൾ നൽകുക.',
   countTitle: 'രോഗികളുടെ എണ്ണം',
   countQ: 'എത്ര പേരെയാണ് രജിസ്റ്റർ ചെയ്യുന്നത്?',
   countHint: 'കുടുംബാംഗങ്ങൾ പോലെ 5 പേരെ വരെ ഒരുമിച്ച് രജിസ്റ്റർ ചെയ്യാം. എല്ലാവർക്കും ഒരേ രജിസ്ട്രേഷൻ ദിവസമായിരിക്കും.',
@@ -314,6 +320,8 @@ const ml: Dict = {
 };
 
 const ta: Dict = {
+  continueTo: 'நோயாளர் {n}-க்குத் தொடரவும்',
+  savedNote: '{name} சேமிக்கப்பட்டது. இப்போது நோயாளர் {n}-இன் விவரங்களை உள்ளிடவும்.',
   countTitle: 'நோயாளர்களின் எண்ணிக்கை',
   countQ: 'எத்தனை பேரைப் பதிவு செய்கிறீர்கள்?',
   countHint: 'உங்கள் குடும்பத்தினர் போல 5 பேர் வரை ஒன்றாகப் பதிவு செய்யலாம். அனைவருக்கும் ஒரே பதிவு நாள்.',
@@ -409,6 +417,8 @@ const ta: Dict = {
 };
 
 const hi: Dict = {
+  continueTo: 'मरीज़ {n} पर आगे बढ़ें',
+  savedNote: '{name} सेव हो गया। अब मरीज़ {n} की जानकारी भरें।',
   countTitle: 'मरीज़ों की संख्या',
   countQ: 'आप कितने लोगों का पंजीकरण कर रहे हैं?',
   countHint: 'आप अपने परिवार जैसे 5 लोगों तक का एक साथ पंजीकरण कर सकते हैं। सभी का पंजीकरण दिन एक ही होगा।',
@@ -504,6 +514,8 @@ const hi: Dict = {
 };
 
 const kn: Dict = {
+  continueTo: 'ರೋಗಿ {n}ಕ್ಕೆ ಮುಂದುವರಿಸಿ',
+  savedNote: '{name} ಉಳಿಸಲಾಗಿದೆ. ಈಗ ರೋಗಿ {n} ಅವರ ವಿವರಗಳನ್ನು ನಮೂದಿಸಿ.',
   countTitle: 'ರೋಗಿಗಳ ಸಂಖ್ಯೆ',
   countQ: 'ನೀವು ಎಷ್ಟು ಜನರನ್ನು ನೋಂದಾಯಿಸುತ್ತಿದ್ದೀರಿ?',
   countHint: 'ನಿಮ್ಮ ಕುಟುಂಬದವರಂತೆ 5 ಜನರವರೆಗೆ ಒಟ್ಟಿಗೆ ನೋಂದಾಯಿಸಬಹುದು. ಎಲ್ಲರಿಗೂ ಒಂದೇ ನೋಂದಣಿ ದಿನ.',
@@ -599,6 +611,8 @@ const kn: Dict = {
 };
 
 const ar: Dict = {
+  continueTo: 'متابعة إلى المريض {n}',
+  savedNote: 'تم حفظ {name}. أدخل الآن بيانات المريض {n}.',
   countTitle: 'عدد المرضى',
   countQ: 'كم شخصاً تسجّل؟',
   countHint: 'يمكنك تسجيل حتى 5 أشخاص معاً، مثل أفراد عائلتك. سيكون للجميع يوم التسجيل نفسه.',

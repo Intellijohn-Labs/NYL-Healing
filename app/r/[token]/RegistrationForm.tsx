@@ -109,6 +109,7 @@ export default function RegistrationForm({ token, lang, slots }: { token: string
   const [payment, setPayment] = useState('');
   const [step, setStep] = useState(0);
   const [fromReview, setFromReview] = useState(false);
+  const [justSaved, setJustSaved] = useState<number | null>(null); // index of the patient just finished
   const [errors, setErrors] = useState<Errors>({});
   const [formError, setFormError] = useState('');
   const [done, setDone] = useState<Done | null>(null);
@@ -154,6 +155,7 @@ export default function RegistrationForm({ token, lang, slots }: { token: string
   function go(s: number) {
     setErrors({});
     setFormError('');
+    setJustSaved(null);
     setStep(s);
     scrollTop();
   }
@@ -166,7 +168,9 @@ export default function RegistrationForm({ token, lang, slots }: { token: string
       setFromReview(false);
       return go(REVIEW);
     }
+    const finished = step >= 1 && step < count ? step - 1 : null;
     go(step + 1);
+    if (finished !== null) setJustSaved(finished); // show "Patient 1 saved" on the next patient's page
   }
 
   function edit(s: number) {
@@ -228,6 +232,7 @@ export default function RegistrationForm({ token, lang, slots }: { token: string
     setFormError('');
     setDone(null);
     setFromReview(false);
+    setJustSaved(null);
     setStep(0);
     router.refresh();
     scrollTop();
@@ -688,7 +693,16 @@ export default function RegistrationForm({ token, lang, slots }: { token: string
             ? t.reviewTitle
             : t.payTitle;
 
-  const primaryLabel = step === PAY ? (pending ? t.submitting : t.confirm) : fromReview ? t.backToReview : t.next;
+  const primaryLabel =
+    step === PAY
+      ? pending
+        ? t.submitting
+        : t.confirm
+      : fromReview
+        ? t.backToReview
+        : step >= 1 && step < count
+          ? fill(t.continueTo, step + 1)
+          : t.next;
   const showPrimary = !(step === DAY && slots.length === 0);
 
   return (
@@ -702,6 +716,39 @@ export default function RegistrationForm({ token, lang, slots }: { token: string
       </div>
       <p className="step-of">{fill(t.stepOf, step + 1, { total })}</p>
       <h1 className="step-title">{title}</h1>
+
+      {count > 1 && step >= 1 && step <= count && (
+        <ol className="who-steps" aria-label={t.countTitle}>
+          {patients.map((p, j) => {
+            const done = Object.keys(validatePatient(p, j, t, today)).length === 0;
+            const current = j === step - 1;
+            const label = (
+              <>
+                {done && !current && <span aria-hidden="true">✓ </span>}
+                {fill(t.patientLabel, j + 1)}
+                {p.fullName.trim() && <small>{p.fullName.trim()}</small>}
+              </>
+            );
+            return (
+              <li key={j} className={`${current ? 'current' : ''} ${done ? 'done' : ''}`} aria-current={current ? 'step' : undefined}>
+                {j < step - 1 && !fromReview ? (
+                  <button type="button" onClick={() => go(j + 1)}>
+                    {label}
+                  </button>
+                ) : (
+                  <span>{label}</span>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+      )}
+
+      {justSaved !== null && step === justSaved + 2 && (
+        <p className="saved-note" role="status">
+          {fill(t.savedNote, step, { name: patients[justSaved].fullName.trim() || fill(t.patientLabel, justSaved + 1) })}
+        </p>
+      )}
 
       <form
         noValidate
