@@ -32,6 +32,7 @@ export default function LoginForm() {
       )}
       <button type="submit" className="btn primary" disabled={pending} aria-busy={pending}>
         {pending ? 'Signing in…' : 'Sign in'}
+        <span aria-hidden="true" className="btn-arrow">→</span>
       </button>
     </form>
   );

@@ -1619,3 +1619,435 @@ textarea[aria-invalid='true'] {
 .slot-fields .full {
   grid-column: 1 / -1;
 }
+
+/* =====================================================================
+   Staff "glass" theme: deep forest green, frosted cards, sage pills.
+   Scoped to .staff-theme so the patient form and pass are unchanged.
+   ===================================================================== */
+.staff-theme {
+  --ink: #eef4ee;
+  --muted: #a7bcb0;
+  --leaf: #b9d5a6;
+  --leaf-dark: #9fc28b;
+  --sage: rgba(185, 213, 166, 0.14);
+  --line: rgba(255, 255, 255, 0.12);
+  --error: #ff8f86;
+  --glass: rgba(255, 255, 255, 0.065);
+  --glass-hi: rgba(255, 255, 255, 0.1);
+  --glass-line: rgba(255, 255, 255, 0.13);
+  --pill: linear-gradient(180deg, #dfeccd 0%, #b5d19f 100%);
+  --pill-ink: #173326;
+  --display: 'Noto Serif Display', Georgia, 'Times New Roman', serif;
+  min-height: 100vh;
+  min-height: 100dvh;
+  color: var(--ink);
+  background:
+    radial-gradient(60rem 40rem at 85% -10%, rgba(132, 178, 120, 0.28), transparent 60%),
+    radial-gradient(50rem 40rem at -10% 40%, rgba(64, 120, 92, 0.32), transparent 60%),
+    radial-gradient(40rem 30rem at 70% 110%, rgba(150, 190, 130, 0.18), transparent 60%),
+    linear-gradient(170deg, #17322a 0%, #10231c 45%, #0b1813 100%);
+  background-attachment: fixed;
+}
+.staff-theme .shell {
+  padding-bottom: calc(6.5rem + env(safe-area-inset-bottom, 0px));
+}
+.staff-theme a {
+  color: var(--leaf);
+}
+.staff-theme .glass,
+.staff-theme .review-card,
+.staff-theme .group,
+.staff-theme .stat,
+.staff-theme .results,
+.staff-theme .today ol,
+.staff-theme .result,
+.staff-theme .empty,
+.staff-theme .notice {
+  background: var(--glass);
+  border: 1px solid var(--glass-line);
+  border-radius: 20px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 10px 30px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+
+/* Header */
+.staff-top {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0 0 1.25rem;
+}
+.staff-top img {
+  width: 40px;
+  height: 40px;
+}
+.staff-title {
+  text-align: center;
+  line-height: 1.2;
+}
+.staff-title p {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 1.375rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.staff-title span {
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid var(--glass-line);
+  background: var(--glass);
+  color: var(--ink);
+  cursor: pointer;
+}
+.icon-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* Headings */
+.staff-theme .step-title {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 1.875rem;
+  letter-spacing: 0.005em;
+}
+.staff-theme .card-h,
+.staff-theme .list-h,
+.staff-theme .today h2 {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 1.25rem;
+}
+.staff-theme .hint,
+.staff-theme .g-meta,
+.staff-theme .stat-l,
+.staff-theme .t-time,
+.staff-theme .t-name small,
+.staff-theme .result-meta,
+.staff-theme .free-title {
+  color: var(--muted);
+}
+
+/* Bottom tab bar */
+.tabbar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  width: min(calc(100% - 1.5rem), 34rem);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  padding: 0.375rem;
+  border-radius: 22px;
+  background: rgba(22, 44, 36, 0.72);
+  border: 1px solid var(--glass-line);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  z-index: 20;
+}
+.tabbar a {
+  display: grid;
+  justify-items: center;
+  gap: 0.125rem;
+  padding: 0.5rem 0.125rem 0.375rem;
+  border-radius: 16px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.tabbar a svg {
+  width: 24px;
+  height: 24px;
+}
+.tabbar a.on {
+  color: var(--pill-ink);
+  background: var(--pill);
+  box-shadow: 0 4px 14px rgba(181, 209, 159, 0.35);
+}
+.tabbar a:focus-visible {
+  outline: 2px solid var(--leaf);
+  outline-offset: 2px;
+}
+
+/* Buttons */
+.staff-theme .btn {
+  border-radius: 999px;
+}
+.staff-theme .btn.primary {
+  background: var(--pill);
+  color: var(--pill-ink);
+  border: 0;
+  box-shadow: 0 6px 18px rgba(181, 209, 159, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.staff-theme .btn.primary:hover {
+  background: linear-gradient(180deg, #e8f2da 0%, #bfd9aa 100%);
+}
+.staff-theme .btn.secondary,
+.staff-theme .btn.small {
+  background: var(--glass-hi);
+  color: var(--ink);
+  border: 1px solid var(--glass-line);
+}
+.staff-theme .btn.small {
+  min-height: 2.5rem;
+}
+.btn-arrow {
+  margin-inline-start: 0.75rem;
+}
+
+/* Inputs */
+.staff-theme input,
+.staff-theme select,
+.staff-theme textarea {
+  background: rgba(0, 0, 0, 0.22) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--glass-line) !important;
+  border-radius: 14px !important;
+  color-scheme: dark;
+}
+.staff-theme input::placeholder {
+  color: rgba(238, 244, 238, 0.4);
+}
+.staff-theme input:focus-visible,
+.staff-theme select:focus-visible {
+  outline: 2px solid var(--leaf);
+  outline-offset: 1px;
+}
+.staff-theme label,
+.staff-theme .field > label,
+.staff-theme .day-pick label,
+.staff-theme .manual label,
+.staff-theme .seat label {
+  color: var(--ink);
+}
+.staff-theme .slot-fields label {
+  color: var(--muted);
+}
+.staff-theme .form-error {
+  background: rgba(255, 120, 110, 0.12);
+  border-inline-start-color: var(--error);
+  color: #ffc2bc;
+}
+.staff-theme .field-error {
+  color: #ffb1a9;
+}
+.staff-theme .seat-ok {
+  color: #c9e8b4;
+}
+
+/* Login */
+.staff-login-page {
+  min-height: 100dvh;
+  display: grid;
+  align-content: center;
+}
+.login-hero {
+  padding: 2rem 1.5rem 1.75rem;
+  text-align: center;
+}
+.login-hero img {
+  margin: 0 auto 0.75rem;
+  display: block;
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.45));
+}
+.login-hero h1 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 2.25rem;
+  font-weight: 600;
+}
+.login-tag {
+  margin: 0.25rem 0 1.5rem;
+  color: #c7dcae;
+  font-weight: 600;
+}
+.login-hero .staff-login {
+  text-align: start;
+}
+
+/* Stats */
+.staff-theme .stat {
+  padding: 0.875rem 1rem;
+}
+.staff-theme .stat-n {
+  font-family: var(--display);
+  font-size: 1.875rem;
+  font-weight: 600;
+}
+.staff-theme .stat.warn {
+  background: rgba(230, 180, 90, 0.12);
+  border-color: rgba(230, 180, 90, 0.35);
+}
+.staff-theme .stat.warn .stat-n {
+  color: #f1cf8c;
+}
+
+/* Tags */
+.staff-theme .tag {
+  background: rgba(185, 213, 166, 0.16);
+  color: #cfe5bd;
+}
+.staff-theme .tag.warn {
+  background: rgba(230, 180, 90, 0.18);
+  color: #f1cf8c;
+}
+.staff-theme .tag.ok {
+  background: rgba(120, 200, 140, 0.18);
+  color: #a9e4b8;
+}
+
+/* Scanner */
+.staff-theme .cam {
+  border-radius: 24px;
+  border: 1px solid var(--glass-line);
+  background: #0a1612;
+}
+.staff-theme .cam-frame span {
+  border-color: rgba(214, 233, 196, 0.95);
+  border-radius: 22px;
+  box-shadow: 0 0 0 999px rgba(5, 14, 10, 0.35), 0 0 30px rgba(185, 213, 166, 0.35);
+}
+.staff-theme .cam-hint {
+  background: rgba(10, 24, 18, 0.7);
+  backdrop-filter: blur(10px);
+}
+.staff-theme .result {
+  border-width: 1px;
+  overflow: hidden;
+}
+.staff-theme .result-banner {
+  color: #fff;
+  font-family: var(--display);
+  font-weight: 600;
+}
+.staff-theme .r-checked_in {
+  border-color: rgba(120, 210, 150, 0.5);
+  box-shadow: 0 0 40px rgba(110, 200, 140, 0.18);
+}
+.staff-theme .r-checked_in .result-banner {
+  background: linear-gradient(90deg, rgba(60, 160, 100, 0.85), rgba(60, 160, 100, 0.45));
+}
+.staff-theme .r-already {
+  border-color: rgba(230, 180, 90, 0.5);
+}
+.staff-theme .r-already .result-banner {
+  background: linear-gradient(90deg, rgba(200, 140, 40, 0.85), rgba(200, 140, 40, 0.45));
+}
+.staff-theme .r-not_found,
+.staff-theme .r-error {
+  border-color: rgba(255, 120, 110, 0.5);
+}
+.staff-theme .r-not_found .result-banner,
+.staff-theme .r-error .result-banner {
+  background: linear-gradient(90deg, rgba(200, 70, 60, 0.85), rgba(200, 70, 60, 0.45));
+}
+.staff-theme .result-name {
+  font-family: var(--display);
+  font-weight: 600;
+}
+.staff-theme .result-id {
+  background: rgba(185, 213, 166, 0.16);
+  color: #d5e9c4;
+  border: 1px solid rgba(185, 213, 166, 0.3);
+}
+.staff-theme .result-facts .hl {
+  color: #c9e8b4;
+}
+.staff-theme .result-facts .warn {
+  color: #f1cf8c;
+}
+.staff-theme .seat {
+  border-top-color: var(--line);
+}
+.staff-theme .pay-due {
+  background: rgba(230, 180, 90, 0.12);
+  border: 1px solid rgba(230, 180, 90, 0.4);
+  border-radius: 16px;
+}
+.staff-theme .pay-due p {
+  color: #f6deaa;
+}
+
+/* Seat buttons and day chips: like the category icons */
+.staff-theme .seat-chip {
+  background: var(--glass);
+  border: 1px solid var(--glass-line);
+  border-radius: 12px;
+  color: var(--ink);
+}
+.staff-theme .seat-chip:hover {
+  background: var(--glass-hi);
+}
+.staff-theme .seat-chip.on {
+  background: var(--pill);
+  border-color: transparent;
+  color: var(--pill-ink) !important;
+  box-shadow: 0 4px 14px rgba(181, 209, 159, 0.3);
+}
+.staff-theme .seat-row-label {
+  color: var(--muted);
+}
+
+/* Lists */
+.staff-theme .today li + li,
+.staff-theme .results li + li,
+.staff-theme .group li {
+  border-top-color: var(--line);
+}
+.staff-theme .today ol,
+.staff-theme .results {
+  overflow: hidden;
+}
+.staff-theme .results a {
+  color: var(--ink) !important;
+}
+.staff-theme .results a:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.staff-theme .today h2 span {
+  background: var(--pill);
+  color: var(--pill-ink);
+}
+.staff-theme .t-seat {
+  color: #d5e9c4;
+}
+.staff-theme .t-seat.none {
+  color: var(--muted);
+}
+.staff-theme .g-name {
+  color: var(--ink);
+}
+.staff-theme .group.muted {
+  background: rgba(255, 255, 255, 0.03);
+  opacity: 0.8;
+}
+.staff-theme .review-card dt {
+  color: var(--muted);
+}
+.staff-theme .empty {
+  border-style: solid;
+  color: var(--muted);
+  padding: 1.25rem;
+}
+/* Keep the whole page dark behind staff screens (no light flash when scrolling past the edges) */
+body:has(.staff-theme) {
+  background: #10231c;
+}
+.staff-theme .pay-due .btn.small {
+  background: linear-gradient(180deg, #f6e2b2 0%, #e2b866 100%);
+  color: #3b2a08;
+  border: 0;
+  box-shadow: 0 4px 14px rgba(226, 184, 102, 0.3);
+}

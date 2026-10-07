@@ -13,7 +13,7 @@ export const viewport: Viewport = {
 };
 
 const FONTS =
-  'https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&family=Noto+Sans+Malayalam:wght@400;600;700&family=Noto+Sans+Tamil:wght@400;600;700&family=Noto+Sans+Kannada:wght@400;600;700&family=Noto+Sans+Arabic:wght@400;600;700&display=swap';
+  'https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&family=Noto+Serif+Display:wght@500;600&family=Noto+Sans+Malayalam:wght@400;600;700&family=Noto+Sans+Tamil:wght@400;600;700&family=Noto+Sans+Kannada:wght@400;600;700&family=Noto+Sans+Arabic:wght@400;600;700&display=swap';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

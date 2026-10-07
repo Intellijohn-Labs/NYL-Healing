@@ -7,19 +7,14 @@ export const dynamic = 'force-dynamic';
 export default async function LoginPage() {
   if (await getStaff()) redirect('/staff/scan');
   return (
-    <main className="shell">
-      <header className="brand">
-        <div className="brand-l">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/nyl-emblem.png" alt="" width={44} height={44} />
-          <div>
-            <p className="wordmark">NYL Reception</p>
-            <p className="centre">Staff sign in</p>
-          </div>
-        </div>
-      </header>
-      <h1 className="step-title">Sign in to the scanner</h1>
-      <LoginForm />
+    <main className="shell staff-shell staff-login-page">
+      <section className="login-hero glass">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/nyl-emblem.png" alt="" width={88} height={88} />
+        <h1>NYL Reception</h1>
+        <p className="login-tag">Healing &amp; Research Centre</p>
+        <LoginForm />
+      </section>
     </main>
   );
 }
