@@ -74,6 +74,9 @@ export default function Scanner({ initialToday }: { initialToday: TodayRow[] }) 
 
   const [view, setView] = useState<View>({ kind: 'scanning' });
   const [camError, setCamError] = useState('');
+  const [camOpen, setCamOpen] = useState(false);
+  const [note, setNote] = useState(''); // e.g. "Seat B-3 saved for Meera Suresh"
+  const manualRef = useRef<HTMLInputElement>(null);
   const [manual, setManual] = useState('');
   const [seat, setSeatValue] = useState('');
   const [seatMsg, setSeatMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -92,6 +95,8 @@ export default function Scanner({ initialToday }: { initialToday: TodayRow[] }) 
     (code: string) => {
       if (busyRef.current) return;
       busyRef.current = true;
+      setCamOpen(false); // close the camera as soon as a pass is read
+      setNote('');
       start(async () => {
         let res: ScanResult;
         try {
@@ -121,11 +126,13 @@ export default function Scanner({ initialToday }: { initialToday: TodayRow[] }) 
     [refreshToday],
   );
 
-  // Camera: start once, keep running; only decode while scanning
+  // Camera: only runs while the full-screen scanner is open
   useEffect(() => {
+    if (!camOpen) return;
     let raf = 0;
     let last = 0;
     let stopped = false;
+    setCamError('');
 
     async function startCam() {
       try {
@@ -135,14 +142,13 @@ export default function Scanner({ initialToday }: { initialToday: TodayRow[] }) 
         });
         if (stopped) return stream.getTracks().forEach((t) => t.stop());
         streamRef.current = stream;
-        const v = videoRef.current!;
+        const v = videoRef.current;
+        if (!v) return;
         v.srcObject = stream;
         await v.play();
         loop(0);
       } catch {
-        setCamError(
-          "The camera couldn't start. Allow camera access for this site in the browser settings, or type the patient ID below.",
-        );
+        setCamError("The camera couldn't start. Allow camera access for this site in the browser settings, or type the patient ID instead.");
       }
     }
 
@@ -153,7 +159,6 @@ export default function Scanner({ initialToday }: { initialToday: TodayRow[] }) 
       const v = videoRef.current;
       const c = canvasRef.current;
       if (!v || !c || v.readyState < 2 || busyRef.current) return;
-      if (document.body.dataset.scanPaused === '1') return;
       const w = 640;
       const h = Math.round((v.videoHeight / v.videoWidth) * w) || 480;
       c.width = w;
@@ -165,30 +170,43 @@ export default function Scanner({ initialToday }: { initialToday: TodayRow[] }) 
       const found = jsQR(img.data, w, h, { inversionAttempts: 'dontInvert' });
       if (!found?.data) return;
       const now = Date.now();
-      // Ignore the same pass for 30 seconds, so a pass still held up isn't scanned again and again
-      if (found.data === lastRef.current.code && now - lastRef.current.at < 30000) return;
+      // Ignore the pass that was just scanned for a few seconds, in case it's still in front of the camera
+      if (found.data === lastRef.current.code && now - lastRef.current.at < 8000) return;
       lastRef.current = { code: found.data, at: now };
       handleCode(found.data);
     }
+
+    // Close with the Escape key, and stop the page scrolling behind the camera
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setCamOpen(false);
+    window.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
 
     startCam();
     return () => {
       stopped = true;
       cancelAnimationFrame(raf);
       streamRef.current?.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
     };
-  }, [handleCode]);
+  }, [camOpen, handleCode]);
 
-  // Pause decoding while a result is on screen
+  // Put the cursor in the seat box when a patient is shown
   useEffect(() => {
-    document.body.dataset.scanPaused = view.kind === 'result' ? '1' : '0';
     if (view.kind === 'result' && 'patient' in view.res) setTimeout(() => seatRef.current?.focus(), 50);
   }, [view]);
 
-  function scanNext() {
+  function backHome() {
     setView({ kind: 'scanning' });
     setSeatMsg(null);
     setManual('');
+  }
+
+  function scanNext() {
+    backHome();
+    setNote('');
+    setCamOpen(true);
   }
 
   function saveSeat(card: Card) {
@@ -199,7 +217,10 @@ export default function Scanner({ initialToday }: { initialToday: TodayRow[] }) 
         setSeatMsg({ ok: true, text: value ? `Seat ${res.patient.seat} saved.` : 'Seat cleared.' });
         setView({ kind: 'result', res: { result: 'already', patient: res.patient } });
         refreshToday();
-        setTimeout(scanNext, 1200);
+        setTimeout(() => {
+          backHome();
+          setNote(value ? `Seat ${res.patient.seat} saved for ${res.patient.full_name}.` : `Seat cleared for ${res.patient.full_name}.`);
+        }, 1000);
       } else if (res.error === 'SEAT_TAKEN') {
         setSeatMsg({ ok: false, text: `Seat ${value.toUpperCase()} was just given to someone else. Pick another free seat.` });
         beep('bad');
@@ -223,19 +244,70 @@ export default function Scanner({ initialToday }: { initialToday: TodayRow[] }) 
 
   return (
     <div className="scanner">
-      <div className={`cam ${view.kind === 'result' ? 'dim' : ''}`}>
-        <video ref={videoRef} playsInline muted />
-        <canvas ref={canvasRef} hidden />
-        {!camError && view.kind === 'scanning' && (
-          <div className="cam-frame" aria-hidden="true">
+      {view.kind === 'scanning' && (
+        <>
+          {note && (
+            <p className="saved-note" role="status">
+              {note}
+            </p>
+          )}
+          <button type="button" className="scan-cta" onClick={() => setCamOpen(true)} disabled={pending}>
+            <span className="scan-cta-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16" />
+                <rect x="8" y="8" width="3" height="3" rx=".5" />
+                <rect x="13" y="8" width="3" height="3" rx=".5" />
+                <rect x="8" y="13" width="3" height="3" rx=".5" />
+                <path d="M13 13h3v3" />
+              </svg>
+            </span>
+            <span className="scan-cta-text">
+              <b>{pending ? 'Checking…' : 'Scan QR'}</b>
+              <small>Scan the patient pass to check in</small>
+            </span>
+          </button>
+        </>
+      )}
+
+      {camOpen && (
+        <div className="scan-overlay" role="dialog" aria-modal="true" aria-label="Scan patient pass">
+          <video ref={videoRef} playsInline muted />
+          <canvas ref={canvasRef} hidden />
+          <div className="ov-top">
+            <button type="button" className="icon-btn" onClick={() => setCamOpen(false)} aria-label="Close camera">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true">
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </button>
+            <p>Scan patient pass</p>
             <span />
           </div>
-        )}
-        {camError && <p className="cam-error">{camError}</p>}
-        {view.kind === 'scanning' && !camError && (
-          <p className="cam-hint">{pending ? 'Checking…' : 'Point the camera at the QR code on the patient pass'}</p>
-        )}
-      </div>
+          {!camError && (
+            <div className="ov-frame" aria-hidden="true">
+              <i className="c tl" />
+              <i className="c tr" />
+              <i className="c bl" />
+              <i className="c br" />
+              <i className="scanline" />
+            </div>
+          )}
+          <div className="ov-bottom">
+            <p className={camError ? 'ov-error' : 'ov-hint'}>
+              {camError || (pending ? 'Checking…' : 'Point the camera at the QR code on the patient pass')}
+            </p>
+            <button
+              type="button"
+              className="btn secondary"
+              onClick={() => {
+                setCamOpen(false);
+                setTimeout(() => manualRef.current?.focus(), 50);
+              }}
+            >
+              Type patient ID instead
+            </button>
+          </div>
+        </div>
+      )}
 
       {view.kind === 'scanning' && (
         <form
@@ -249,6 +321,7 @@ export default function Scanner({ initialToday }: { initialToday: TodayRow[] }) 
           <div className="manual-row">
             <input
               id="manual"
+              ref={manualRef}
               value={manual}
               onChange={(e) => setManual(e.target.value.toUpperCase())}
               placeholder="NYL1042"
