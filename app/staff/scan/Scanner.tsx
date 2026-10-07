@@ -2,7 +2,17 @@
 
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import jsQR from 'jsqr';
-import { checkIn, setSeat, todayCheckins, type Card, type ScanResult, type TodayRow } from '../actions';
+import {
+  checkIn,
+  freeSeats,
+  markPaid,
+  setSeat,
+  todayCheckins,
+  type Card,
+  type SeatInfo,
+  type ScanResult,
+  type TodayRow,
+} from '../actions';
 
 type View = { kind: 'scanning' } | { kind: 'result'; res: ScanResult };
 
@@ -68,6 +78,9 @@ export default function Scanner({ initialToday }: { initialToday: TodayRow[] }) 
   const [seat, setSeatValue] = useState('');
   const [seatMsg, setSeatMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [today, setToday] = useState<TodayRow[]>(initialToday);
+  const [seatInfo, setSeatInfo] = useState<SeatInfo | null>(null);
+  const free = seatInfo?.free ?? null;
+  const [paying, setPaying] = useState(false);
   const [pending, start] = useTransition();
   const seatRef = useRef<HTMLInputElement>(null);
 
@@ -91,8 +104,15 @@ export default function Scanner({ initialToday }: { initialToday: TodayRow[] }) 
           return;
         }
         beep(res.result === 'checked_in' ? 'ok' : res.result === 'already' ? 'warn' : 'bad');
-        setSeatValue('patient' in res ? (res.patient.seat ?? '') : '');
         setSeatMsg(null);
+        if ('patient' in res) {
+          const info = await freeSeats().catch(() => ({ total: 0, free: [] }) as SeatInfo);
+          setSeatInfo(info);
+          // Keep the seat they already have today, otherwise suggest the next free one
+          setSeatValue(res.patient.seat ?? info.free[0]?.label ?? '');
+        } else {
+          setSeatValue('');
+        }
         setView({ kind: 'result', res });
         refreshToday();
         busyRef.current = false;
@@ -181,7 +201,14 @@ export default function Scanner({ initialToday }: { initialToday: TodayRow[] }) 
         refreshToday();
         setTimeout(scanNext, 1200);
       } else if (res.error === 'SEAT_TAKEN') {
-        setSeatMsg({ ok: false, text: `Seat ${value.toUpperCase()} is already given to someone else today.` });
+        setSeatMsg({ ok: false, text: `Seat ${value.toUpperCase()} was just given to someone else. Pick another free seat.` });
+        beep('bad');
+        freeSeats().then((info) => {
+          setSeatInfo(info);
+          setSeatValue(info.free[0]?.label ?? '');
+        });
+      } else if (res.error === 'NOT_A_SEAT') {
+        setSeatMsg({ ok: false, text: `${value.toUpperCase()} isn't a seat in the hall. Pick one from the free seats.` });
         beep('bad');
       } else if (res.error === 'SIGNED_OUT') {
         window.location.href = '/staff/login';
@@ -274,10 +301,32 @@ export default function Scanner({ initialToday }: { initialToday: TodayRow[] }) 
                 {card.registration_day && card.registration_day > todayIST() && (
                   <li className="warn">Registered for {dayOf(card.registration_day)}, not today</li>
                 )}
-                {card.payment_status === 'pending' && card.payment_method === 'offline' && card.amount_due != null && (
-                  <li className="warn">Registration fee to collect: ₹{card.amount_due.toLocaleString('en-IN')}</li>
-                )}
+                {card.payment_status === 'paid' && card.registration_day === todayIST() && <li>Registration fee paid</li>}
               </ul>
+
+              {card.payment_status === 'pending' && card.payment_method === 'offline' && card.group_id && (
+                <div className="pay-due">
+                  <p>
+                    Registration fee to collect: <b>₹{(card.amount_due ?? 0).toLocaleString('en-IN')}</b>
+                    {(card.group_size ?? 1) > 1 && <span> for {card.group_size} people registered together</span>}
+                  </p>
+                  <button
+                    type="button"
+                    className="btn small"
+                    disabled={paying}
+                    onClick={async () => {
+                      setPaying(true);
+                      const r = await markPaid(card.group_id!);
+                      setPaying(false);
+                      if (r.ok) {
+                        setView({ kind: 'result', res: { ...res, patient: { ...card, payment_status: 'paid' } } as ScanResult });
+                      }
+                    }}
+                  >
+                    {paying ? 'Saving…' : 'Mark paid'}
+                  </button>
+                </div>
+              )}
 
               <form
                 className="seat"
@@ -306,6 +355,44 @@ export default function Scanner({ initialToday }: { initialToday: TodayRow[] }) 
                   </button>
                 </div>
                 {seatMsg && <p className={seatMsg.ok ? 'seat-ok' : 'field-error'}>{seatMsg.text}</p>}
+                {free && free.length > 0 && (
+                  <div className="free-seats">
+                    <p className="free-title">
+                      Free seats <span>{free.length}</span>
+                    </p>
+                    {Object.entries(
+                      free.reduce<Record<string, string[]>>((acc, s) => {
+                        (acc[s.row] ??= []).push(s.label);
+                        return acc;
+                      }, {}),
+                    ).map(([row, labels]) => (
+                      <div className="seat-row" key={row}>
+                        <span className="seat-row-label">{row}</span>
+                        <div className="seat-chips">
+                          {labels.map((l) => (
+                            <button
+                              key={l}
+                              type="button"
+                              className={`seat-chip ${seat === l ? 'on' : ''}`}
+                              onClick={() => {
+                                setSeatValue(l);
+                                setSeatMsg(null);
+                              }}
+                            >
+                              {l}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {seatInfo && seatInfo.total === 0 && (
+                  <p className="hint">No hall seats are set up yet, so type the seat number.</p>
+                )}
+                {seatInfo && seatInfo.total > 0 && seatInfo.free.length === 0 && (
+                  <p className="field-error">All {seatInfo.total} seats are taken today.</p>
+                )}
               </form>
             </>
           )}

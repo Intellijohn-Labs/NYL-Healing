@@ -1070,6 +1070,9 @@ textarea[aria-invalid='true'] {
 .manual-row input {
   flex: 1;
   min-width: 0;
+}
+.manual .manual-row input,
+.seat .manual-row input {
   text-transform: uppercase;
   font-size: 1.25rem;
   letter-spacing: 0.04em;
@@ -1285,4 +1288,334 @@ textarea[aria-invalid='true'] {
   border-inline-start: 4px solid #1f7a4d;
   color: #17573a;
   font-weight: 600;
+}
+
+/* ---------- Receptionist app ---------- */
+.staff-shell {
+  max-width: 52rem;
+}
+.staff-nav {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.25rem;
+  margin: -0.5rem 0 1.25rem;
+}
+.staff-nav a {
+  text-align: center;
+  font-size: 0.9375rem;
+  padding: 0.5rem 0.25rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.staff-nav a.on {
+  background: var(--leaf);
+  border-color: var(--leaf);
+  color: #fff;
+}
+.staff-shell a {
+  color: var(--leaf);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.625rem;
+  margin-bottom: 1rem;
+}
+.stat {
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  padding: 0.75rem 1rem;
+}
+.stat-n {
+  margin: 0;
+  font-size: 1.625rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.stat-l {
+  margin: 0.125rem 0 0;
+  font-size: 0.9375rem;
+  color: var(--muted);
+}
+.stat.warn {
+  border-color: #d9a441;
+  background: #fdf6e7;
+}
+.stat.warn .stat-n {
+  color: #8a5a12;
+}
+
+.tag {
+  display: inline-block;
+  margin-inline-start: 0.375rem;
+  padding: 0.0625rem 0.5rem;
+  border-radius: 999px;
+  background: var(--sage);
+  color: var(--leaf);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  font-style: normal;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.tag.warn {
+  background: #fbecd0;
+  color: #8a5a12;
+}
+.tag.ok {
+  background: #dff1e6;
+  color: #1f7a4d;
+}
+
+/* Scanner: fee and seats */
+.pay-due {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0.875rem 1.125rem 0;
+  padding: 0.75rem 0.875rem;
+  border-radius: 10px;
+  background: #fdf6e7;
+  border: 1.5px solid #d9a441;
+}
+.pay-due p {
+  margin: 0;
+  color: #6b4610;
+}
+.free-seats {
+  display: grid;
+  gap: 0.375rem;
+  margin-top: 0.5rem;
+}
+.free-title {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.free-title span {
+  color: var(--leaf);
+}
+.seat-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+.seat-row-label {
+  flex: none;
+  width: 1.75rem;
+  padding-top: 0.5rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+.seat-chips,
+.day-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+.day-chips {
+  margin: 0.75rem 0 1rem;
+}
+.seat-chip {
+  min-height: 2.5rem;
+  min-width: 3.5rem;
+  padding: 0.25rem 0.625rem;
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.seat-chip.on {
+  background: var(--leaf);
+  border-color: var(--leaf);
+  color: #fff !important;
+}
+
+/* Bookings, Days, Patients */
+.day-pick {
+  display: grid;
+  gap: 0.375rem;
+  margin-bottom: 0.5rem;
+}
+.day-pick label {
+  font-weight: 600;
+}
+.groups {
+  display: grid;
+  gap: 0.75rem;
+}
+.group {
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  padding: 0.75rem 1rem;
+}
+.group.muted {
+  background: #f1f4f2;
+}
+.group-hd {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.group-hd p {
+  margin: 0;
+}
+.group ul {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+}
+.group li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.625rem 0;
+  border-top: 1px solid var(--line);
+}
+.g-name {
+  font-weight: 700;
+  text-decoration: none;
+}
+.g-meta {
+  display: block;
+  margin: 0.125rem 0 0;
+  font-size: 0.9375rem;
+  color: var(--muted);
+}
+.results {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+.results li + li {
+  border-top: 1px solid var(--line);
+}
+.results a {
+  display: block;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  color: var(--ink) !important;
+}
+.results a:hover {
+  background: #f4f8f6;
+}
+.card-h,
+.list-h {
+  margin: 0 0 0.5rem;
+  font-size: 1.125rem;
+}
+.list-h {
+  margin-top: 1.5rem;
+}
+.review-card + .review-card,
+.review-card + .today {
+  margin-top: 1rem;
+}
+.dl-row {
+  display: grid;
+  grid-template-columns: minmax(7rem, 35%) 1fr;
+  gap: 0.75rem;
+  padding: 0.375rem 0;
+}
+.review-card dl .dl-row dt {
+  margin-top: 0;
+}
+.reg-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+}
+.reg-row p {
+  margin: 0;
+}
+.slot-form {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.slot-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: 0.5rem;
+}
+.slot-fields label {
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.slot-fields input,
+.slot-fields select {
+  min-height: 2.75rem;
+  font: inherit;
+  padding: 0.375rem 0.625rem;
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+}
+.slot-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.slot-actions p {
+  margin: 0;
+}
+.slot-form.new .slot-actions .btn {
+  flex: none;
+}
+
+@media (max-width: 380px) {
+  .staff-nav a {
+    font-size: 0.8125rem;
+  }
+}
+.t-seat {
+  white-space: nowrap;
+}
+.pay-due {
+  flex-wrap: wrap;
+}
+.pay-due p {
+  flex: 1 1 12rem;
+}
+/* Staff cards: no separator line above the details list */
+.staff-shell .review-card dl {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+.slot-fields {
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+}
+.slot-fields .full {
+  grid-column: 1 / -1;
 }
