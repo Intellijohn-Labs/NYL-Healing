@@ -2254,3 +2254,20 @@ body:has(.staff-theme) {
   border-radius: 999px;
   backdrop-filter: blur(10px);
 }
+/* Bookings: whether the patient has arrived (checked in) */
+.arrival {
+  flex: none;
+  align-self: flex-start;
+  padding: 0.125rem 0.625rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--muted);
+  border: 1px solid var(--line);
+}
+.arrival.in {
+  color: #a9e4b8;
+  border-color: rgba(120, 200, 140, 0.45);
+  background: rgba(120, 200, 140, 0.14);
+}

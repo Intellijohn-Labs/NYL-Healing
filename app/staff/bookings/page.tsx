@@ -113,8 +113,8 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
                             {p.guardian_name ? `, guardian ${p.guardian_name} ${phone(p.guardian_phone)}` : ''}
                           </p>
                         </div>
-                        <span className={`t-seat ${p.checked_in ? '' : 'none'}`}>
-                          {p.checked_in ? (p.seat ?? 'Arrived') : 'Not yet'}
+                        <span className={`arrival ${p.checked_in ? 'in' : ''}`}>
+                          {p.checked_in ? (p.seat ? `Arrived · ${p.seat}` : 'Arrived') : 'Not arrived'}
                         </span>
                       </li>
                     ))}
