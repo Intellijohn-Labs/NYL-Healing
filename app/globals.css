@@ -2271,3 +2271,50 @@ body:has(.staff-theme) {
   border-color: rgba(120, 200, 140, 0.45);
   background: rgba(120, 200, 140, 0.14);
 }
+/* Scanner: "not their registration day" warning */
+.r-wrong_day {
+  border-color: #b7791f;
+}
+.r-wrong_day .result-banner {
+  background: #b7791f;
+}
+.staff-theme .r-wrong_day {
+  border-color: rgba(230, 180, 90, 0.55);
+  box-shadow: 0 0 40px rgba(230, 180, 90, 0.15);
+}
+.staff-theme .r-wrong_day .result-banner {
+  background: linear-gradient(90deg, rgba(200, 140, 40, 0.9), rgba(200, 140, 40, 0.5));
+}
+.wrong-day {
+  padding-bottom: 1.125rem;
+}
+.wd-text {
+  margin: 1rem 1.125rem 0;
+  padding: 0.75rem 0.875rem;
+  border-radius: 14px;
+  background: rgba(230, 180, 90, 0.14);
+  border: 1px solid rgba(230, 180, 90, 0.4);
+  color: #f6deaa;
+  line-height: 1.5;
+}
+.wd-text b {
+  color: #fff;
+}
+.wd-q {
+  margin: 1rem 1.125rem 0;
+  font-weight: 700;
+  font-size: 1.0625rem;
+}
+.wd-actions {
+  display: flex;
+  gap: 0.625rem;
+  margin: 0.75rem 1.125rem 0;
+}
+.wd-actions .btn {
+  flex: 1;
+}
+.arrival.other {
+  color: #f1cf8c;
+  border-color: rgba(230, 180, 90, 0.45);
+  background: rgba(230, 180, 90, 0.12);
+}

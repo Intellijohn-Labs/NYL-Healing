@@ -38,6 +38,8 @@ export type DayPatient = {
   guardian_phone: string | null;
   checked_in: boolean;
   seat: string | null;
+  last_visit: string | null; // most recent visit on any day
+  last_seat: string | null;
 };
 export type DayGroup = {
   group_id: string;

@@ -113,9 +113,17 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
                             {p.guardian_name ? `, guardian ${p.guardian_name} ${phone(p.guardian_phone)}` : ''}
                           </p>
                         </div>
-                        <span className={`arrival ${p.checked_in ? 'in' : ''}`}>
-                          {p.checked_in ? (p.seat ? `Arrived · ${p.seat}` : 'Arrived') : 'Not arrived'}
-                        </span>
+                        {p.checked_in ? (
+                          <span className="arrival in">{p.seat ? `Arrived · ${p.seat}` : 'Arrived'}</span>
+                        ) : p.last_visit ? (
+                          // Came, but on a different day from this registration day (e.g. early)
+                          <span className="arrival other" title="Came on a different day">
+                            Came {dayLabel(p.last_visit)}
+                            {p.last_seat ? ` · ${p.last_seat}` : ''}
+                          </span>
+                        ) : (
+                          <span className="arrival">Not arrived</span>
+                        )}
                       </li>
                     ))}
                   </ul>
