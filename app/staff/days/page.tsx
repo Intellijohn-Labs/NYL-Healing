@@ -3,7 +3,8 @@ import { requireStaff } from '@/lib/staff';
 import { listSlots } from '@/lib/staffData';
 import { dayLabel, todayIST } from '@/lib/format';
 import StaffShell from '@/components/staff/StaffShell';
-import SlotForm from './SlotForm';
+import AddDay from './AddDay';
+import DayRow from './DayRow';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,30 +18,19 @@ export default async function DaysPage() {
   return (
     <StaffShell staff={staff} active="days">
       <h1 className="step-title">Registration days</h1>
-      <p className="hint">
-        New patients choose from the open days below. &quot;Closed&quot; hides a day from the form but keeps its bookings.
+      <p className="hint page-intro">
+        New patients choose from the open days. &quot;Closed&quot; hides a day from the form but keeps its bookings.
       </p>
 
-      <section className="review-card">
-        <h2 className="card-h">Add a registration day</h2>
-        <SlotForm minDate={today} />
-      </section>
+      <AddDay minDate={today} />
 
       <h2 className="list-h">Upcoming</h2>
       {upcoming.length === 0 ? (
         <p className="empty">No upcoming registration days. New patients can&apos;t register until one is added.</p>
       ) : (
-        <div className="groups">
+        <div className="day-list">
           {upcoming.map((s) => (
-            <section className={`group ${s.status !== 'open' ? 'muted' : ''}`} key={s.id}>
-              <div className="group-hd">
-                <p className="g-name">{dayLabel(s.slot_date, true)}</p>
-                <Link href={`/staff/bookings?date=${s.slot_date}`} className="tag">
-                  {s.booked}/{s.capacity} booked →
-                </Link>
-              </div>
-              <SlotForm slot={s} minDate={today} />
-            </section>
+            <DayRow key={s.id} slot={s} minDate={today} />
           ))}
         </div>
       )}
