@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import type { Staff } from '@/lib/staff';
+import { FRONT_DESK_ROLES, ROOM_SETTINGS_ROLES, type Staff } from '@/lib/staff';
 import { logout } from '@/app/staff/actions';
 
 const ICONS: Record<string, React.ReactNode> = {
@@ -38,14 +38,29 @@ const ICONS: Record<string, React.ReactNode> = {
       <path d="M3.5 10h17M8 3v4M16 3v4M12 13v4M10 15h4" />
     </>
   ),
+  photo: (
+    <>
+      <rect x="3.5" y="6.5" width="17" height="13" rx="2.5" />
+      <path d="M8.5 6.5l1.4-2.2h4.2l1.4 2.2" />
+      <circle cx="12" cy="13" r="3.4" />
+    </>
+  ),
+  rooms: (
+    <>
+      <path d="M3 18V7M21 18v-5a3 3 0 0 0-3-3h-8v8M3 14h18M3 18h18" />
+      <circle cx="6.5" cy="11" r="1.6" />
+    </>
+  ),
 };
 
 const TABS = [
-  { key: 'scan', href: '/staff/scan', label: 'Scan' },
-  { key: 'today', href: '/staff/today', label: 'Today' },
-  { key: 'bookings', href: '/staff/bookings', label: 'Bookings' },
-  { key: 'patients', href: '/staff/patients', label: 'Patients' },
-  { key: 'days', href: '/staff/days', label: 'Days' },
+  { key: 'scan', href: '/staff/scan', label: 'Scan', roles: FRONT_DESK_ROLES },
+  { key: 'today', href: '/staff/today', label: 'Today', roles: FRONT_DESK_ROLES },
+  { key: 'bookings', href: '/staff/bookings', label: 'Bookings', roles: FRONT_DESK_ROLES },
+  { key: 'patients', href: '/staff/patients', label: 'Patients', roles: FRONT_DESK_ROLES },
+  { key: 'days', href: '/staff/days', label: 'Days', roles: FRONT_DESK_ROLES },
+  { key: 'photo', href: '/staff/photo-healing', label: 'Photo', roles: FRONT_DESK_ROLES },
+  { key: 'rooms', href: '/staff/rooms', label: 'Rooms', roles: ROOM_SETTINGS_ROLES },
 ] as const;
 
 export type Tab = (typeof TABS)[number]['key'];
@@ -59,6 +74,8 @@ export function Icon({ name }: { name: string }) {
 }
 
 export default function StaffShell({ staff, active, children }: { staff: Staff; active: Tab; children: React.ReactNode }) {
+  // Each person only sees the screens their role allows
+  const tabs = TABS.filter((t) => (t.roles as readonly string[]).includes(staff.role));
   return (
     <main className="shell staff-shell">
       <header className="staff-top">
@@ -79,14 +96,16 @@ export default function StaffShell({ staff, active, children }: { staff: Staff; 
 
       {children}
 
-      <nav className="tabbar" aria-label="Reception">
-        {TABS.map((t) => (
+      {tabs.length > 1 && (
+      <nav className="tabbar" aria-label="Staff menu" style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}>
+        {tabs.map((t) => (
           <Link key={t.key} href={t.href} className={t.key === active ? 'on' : ''} aria-current={t.key === active ? 'page' : undefined}>
             <Icon name={t.key} />
             <span>{t.label}</span>
           </Link>
         ))}
       </nav>
+      )}
     </main>
   );
 }
