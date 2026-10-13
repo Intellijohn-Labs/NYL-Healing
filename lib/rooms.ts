@@ -45,7 +45,7 @@ export async function listHotels(): Promise<HotelSummary[]> {
   const [{ data: hotels, error }, { data: types }, { data: rooms }] = await Promise.all([
     db().from('hotels').select('*').order('sort_order').order('name'),
     db().from('room_types').select('id, hotel_id'),
-    db().from('rooms').select('id, hotel_id, active'),
+    db().from('hotel_rooms').select('id, hotel_id, active'),
   ]);
   if (error) throw error;
   return (hotels ?? []).map((h: Hotel) => ({
@@ -63,7 +63,7 @@ export async function getHotel(id: string) {
   if (!hotel) return null;
   const [{ data: types }, { data: rooms }] = await Promise.all([
     db().from('room_types').select('*').eq('hotel_id', id).order('sort_order').order('name'),
-    db().from('rooms').select('*').eq('hotel_id', id).order('sort_order').order('label'),
+    db().from('hotel_rooms').select('*').eq('hotel_id', id).order('sort_order').order('label'),
   ]);
   const roomIds = (rooms ?? []).map((r: Room) => r.id);
   const { data: blocks } = roomIds.length

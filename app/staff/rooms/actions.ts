@@ -178,9 +178,9 @@ export async function addRooms(_prev: FormState, f: FormData): Promise<FormState
   if (!UUID.test(hotelId) || !UUID.test(typeId)) return bad('Please choose a room type.');
   const labels = parseLabels(str(f, 'labels', 400));
   if (!labels) return bad('Enter room numbers like "101-110" or "101, 102, A1".');
-  const { count } = await db().from('rooms').select('id', { count: 'exact', head: true }).eq('hotel_id', hotelId);
+  const { count } = await db().from('hotel_rooms').select('id', { count: 'exact', head: true }).eq('hotel_id', hotelId);
   const { error } = await db()
-    .from('rooms')
+    .from('hotel_rooms')
     .insert(labels.map((label, i) => ({ hotel_id: hotelId, room_type_id: typeId, label, sort_order: (count ?? 0) + i })));
   if (error) return bad(friendly(error, "Couldn't add the rooms."));
   revalidatePath(`/staff/rooms/${hotelId}`);
@@ -195,13 +195,13 @@ export async function roomAction(f: FormData) {
   const action = str(f, 'action', 20);
   if (!UUID.test(id) || !UUID.test(hotelId)) return;
   if (action === 'on' || action === 'off') {
-    await db().from('rooms').update({ active: action === 'on' }).eq('id', id);
+    await db().from('hotel_rooms').update({ active: action === 'on' }).eq('id', id);
   } else if (action === 'move') {
     const typeId = str(f, 'room_type_id', 40);
-    if (UUID.test(typeId)) await db().from('rooms').update({ room_type_id: typeId }).eq('id', id);
+    if (UUID.test(typeId)) await db().from('hotel_rooms').update({ room_type_id: typeId }).eq('id', id);
   } else if (action === 'delete') {
     // Once bookings exist, a booked room is switched off instead of deleted
-    await db().from('rooms').delete().eq('id', id);
+    await db().from('hotel_rooms').delete().eq('id', id);
   }
   revalidatePath(`/staff/rooms/${hotelId}`);
 }

@@ -2726,3 +2726,217 @@ body:has(.staff-theme) {
     grid-column: 3;
   }
 }
+
+/* Seven tabs (owner): tighter */
+.tabbar[style*='repeat(7'] a {
+  font-size: 0.625rem;
+  padding-left: 0;
+  padding-right: 0;
+}
+.tabbar[style*='repeat(7'] a svg {
+  width: 21px;
+  height: 21px;
+}
+
+/* ---------- Photo Healing ---------- */
+.ph-switch {
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  margin-bottom: 1.25rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--glass, #fff);
+}
+.ph-switch a {
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  text-decoration: none;
+  color: var(--muted) !important;
+  white-space: nowrap;
+}
+.ph-switch a.on {
+  background: var(--pill, var(--leaf));
+  color: var(--pill-ink, #fff) !important;
+}
+.ph-days,
+.ph-defaults {
+  display: grid;
+  gap: 1rem;
+}
+.ph-day {
+  padding: 1rem 1.125rem 1.125rem;
+}
+.ph-day-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+.ph-day-hd .card-h {
+  margin: 0;
+}
+.ph-sessions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.625rem;
+}
+.ph-session {
+  padding: 0.75rem 0.875rem;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  display: grid;
+  gap: 0.625rem;
+}
+.ph-session.is-closed {
+  background: rgba(255, 120, 110, 0.06);
+  border-color: rgba(255, 120, 110, 0.3);
+}
+.ph-session.is-done {
+  opacity: 0.6;
+}
+.ph-main {
+  display: grid;
+  grid-template-columns: minmax(7rem, auto) 1fr auto;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+.ph-time {
+  margin: 0;
+  font-family: var(--display, inherit);
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.15;
+}
+.ph-session.is-closed .ph-time {
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+.ph-sub {
+  margin: 0.125rem 0 0;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+.ph-sub .tag {
+  margin-inline-start: 0.375rem;
+}
+.ph-info p {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--muted);
+}
+.ph-info b {
+  color: var(--ink);
+}
+.ph-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.ph-edit,
+.ph-add {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.625rem 0.75rem;
+}
+.ph-edit .rf,
+.ph-add .rf {
+  min-width: 9rem;
+}
+.ph-add-btns {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.ph-day-foot {
+  margin-top: 0.75rem;
+}
+.ph-confirm {
+  padding: 0.75rem 0.875rem;
+  border-radius: 14px;
+  background: rgba(230, 180, 90, 0.14);
+  border: 1px solid rgba(230, 180, 90, 0.45);
+}
+.ph-confirm p {
+  margin: 0;
+  color: #f6deaa;
+  line-height: 1.5;
+}
+.ph-confirm .wd-actions {
+  margin: 0.75rem 0 0;
+}
+.ph-note {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--muted);
+}
+.ph-note.warn {
+  margin-bottom: 1rem;
+  padding: 0.75rem 0.875rem;
+  border-radius: 14px;
+  background: rgba(230, 180, 90, 0.12);
+  border: 1px solid rgba(230, 180, 90, 0.4);
+  color: #f6deaa;
+}
+.ph-def-list {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+.ph-def-list li {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(7.5rem, 10rem) 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+}
+.ph-def-list input,
+.ph-cutoff input {
+  min-height: 2.75rem;
+  font: inherit;
+  padding: 0.375rem 0.75rem;
+  border-radius: 12px;
+}
+.ph-def-no {
+  font-weight: 700;
+}
+.ph-def-12 {
+  color: var(--muted);
+}
+.ph-cutoff {
+  max-width: 16rem;
+}
+@media (max-width: 560px) {
+  .ph-main {
+    grid-template-columns: 1fr auto;
+  }
+  .ph-info {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .ph-main .status-pill {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+  }
+  .ph-def-list li {
+    grid-template-columns: auto 1fr auto;
+    gap: 0.5rem;
+  }
+  .ph-def-no {
+    white-space: nowrap;
+  }
+  .ph-def-12 {
+    display: none;
+  }
+}

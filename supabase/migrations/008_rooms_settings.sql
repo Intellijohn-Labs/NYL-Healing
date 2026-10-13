@@ -4,6 +4,9 @@
 --   * individual rooms, and dates when a room is blocked
 --   * a new staff role, rooms_manager, who can change these settings (as can the owner)
 -- Run after 001 to 007. Safe to run again.
+--
+-- Note: the database already has older, empty `rooms` and `room_bookings` tables from the first design.
+-- They are left untouched; this step uses its own `hotel_rooms` table instead.
 
 -- New role. (Must be run on its own line; it can't be used in the same transaction, and this file doesn't use it.)
 alter type staff_role add value if not exists 'rooms_manager';
@@ -53,7 +56,7 @@ create table if not exists room_types (
 );
 create index if not exists room_types_hotel_idx on room_types (hotel_id);
 
-create table if not exists rooms (
+create table if not exists hotel_rooms (
   id            uuid primary key default gen_random_uuid(),
   hotel_id      uuid not null references hotels(id) on delete cascade,
   room_type_id  uuid not null references room_types(id) on delete restrict,
@@ -62,13 +65,13 @@ create table if not exists rooms (
   sort_order    integer not null default 0,
   created_at    timestamptz not null default now()
 );
-create unique index if not exists rooms_label_key on rooms (hotel_id, upper(label));
-create index if not exists rooms_type_idx on rooms (room_type_id);
+create unique index if not exists hotel_rooms_label_key on hotel_rooms (hotel_id, upper(label));
+create index if not exists hotel_rooms_type_idx on hotel_rooms (room_type_id);
 
 -- Dates when a room can't be booked (maintenance, staff use...). end_date is the last blocked night.
 create table if not exists room_blocks (
   id          uuid primary key default gen_random_uuid(),
-  room_id     uuid not null references rooms(id) on delete cascade,
+  room_id     uuid not null references hotel_rooms(id) on delete cascade,
   start_date  date not null,
   end_date    date not null,
   reason      text,
@@ -80,5 +83,5 @@ create index if not exists room_blocks_room_idx on room_blocks (room_id, end_dat
 
 alter table hotels      enable row level security;
 alter table room_types  enable row level security;
-alter table rooms       enable row level security;
+alter table hotel_rooms enable row level security;
 alter table room_blocks enable row level security;
