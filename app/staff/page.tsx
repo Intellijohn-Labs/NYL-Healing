@@ -1,5 +1,9 @@
 import { redirect } from 'next/navigation';
+import { getStaff, homeFor } from '@/lib/staff';
 
-export default function StaffHome() {
-  redirect('/staff/scan');
+export const dynamic = 'force-dynamic';
+
+export default async function StaffHome() {
+  const staff = await getStaff();
+  redirect(staff ? homeFor(staff.role) : '/staff/login');
 }

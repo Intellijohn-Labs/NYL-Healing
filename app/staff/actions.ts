@@ -5,7 +5,10 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { db } from '@/lib/supabase';
-import { getStaff, makeSession, SCAN_ROLES, SESSION_HOURS, STAFF_COOKIE } from '@/lib/staff';
+import { FRONT_DESK_ROLES, homeFor, makeSession, SESSION_HOURS, STAFF_COOKIE, STAFF_ROLES, staffWithRole } from '@/lib/staff';
+
+// Scanner, today, bookings, payments and days are for front-desk staff only
+const frontDesk = () => staffWithRole(FRONT_DESK_ROLES);
 
 // ---------- Login / logout ----------
 
@@ -28,8 +31,8 @@ export async function login(_prev: LoginState, form: FormData): Promise<LoginSta
     .select('id, role, active')
     .eq('auth_user_id', data.user.id)
     .maybeSingle();
-  if (!staff || !staff.active || !SCAN_ROLES.includes(staff.role)) {
-    return { error: "This account doesn't have access to the scanner. Ask the NYL admin." };
+  if (!staff || !staff.active || !STAFF_ROLES.includes(staff.role)) {
+    return { error: "This account doesn't have access to the staff app. Ask the NYL admin." };
   }
 
   const jar = await cookies();
@@ -40,7 +43,7 @@ export async function login(_prev: LoginState, form: FormData): Promise<LoginSta
     path: '/staff',
     maxAge: SESSION_HOURS * 3600,
   });
-  redirect('/staff/scan');
+  redirect(homeFor(staff.role));
 }
 
 export async function logout() {
@@ -71,14 +74,27 @@ export type Card = {
   amount_due: number | null;
 };
 
+export type WrongDay = {
+  patient_code: string;
+  full_name: string;
+  dob: string | null;
+  gender: string | null;
+  city: string | null;
+  registration_day: string;
+  starts_at: string | null;
+  days_off: number; // positive: came early, negative: missed their day
+};
+
 export type ScanResult =
   | { result: 'checked_in' | 'already'; patient: Card }
+  | { result: 'wrong_day'; preview: WrongDay }
   | { result: 'not_found' }
   | { result: 'signed_out' }
   | { result: 'error' };
 
-export async function checkIn(code: string, station: string): Promise<ScanResult> {
-  const staff = await getStaff();
+// force = true when reception pressed "Check in anyway" after the wrong-day warning
+export async function checkIn(code: string, station: string, force = false): Promise<ScanResult> {
+  const staff = await frontDesk();
   if (!staff) return { result: 'signed_out' };
   const clean = String(code ?? '').trim().slice(0, 300);
   if (!clean) return { result: 'not_found' };
@@ -86,6 +102,7 @@ export async function checkIn(code: string, station: string): Promise<ScanResult
     p_code: clean,
     p_staff: staff.id,
     p_station: String(station ?? '').slice(0, 40) || null,
+    p_force: force === true,
   });
   if (error) {
     console.error('staff_check_in failed', error);
@@ -99,7 +116,7 @@ export type SeatResult =
   | { ok: false; error: 'SEAT_TAKEN' | 'NOT_A_SEAT' | 'NOT_FOUND' | 'SIGNED_OUT' | 'GENERIC' };
 
 export async function setSeat(attendanceId: string, seat: string): Promise<SeatResult> {
-  const staff = await getStaff();
+  const staff = await frontDesk();
   if (!staff) return { ok: false, error: 'SIGNED_OUT' };
   if (!/^[0-9a-f-]{36}$/.test(attendanceId)) return { ok: false, error: 'NOT_FOUND' };
   const { data, error } = await db().rpc('staff_set_seat', {
@@ -120,7 +137,7 @@ export async function setSeat(attendanceId: string, seat: string): Promise<SeatR
 export type TodayRow = { attendance_id: string; seat: string | null; checked_in_at: string; patient_code: string; full_name: string };
 
 export async function todayCheckins(): Promise<TodayRow[]> {
-  const staff = await getStaff();
+  const staff = await frontDesk();
   if (!staff) return [];
   const { data } = await db().rpc('staff_today_checkins', { p_centre: staff.centre_id ?? 1 });
   return (data ?? []) as TodayRow[];
@@ -133,7 +150,7 @@ export type FreeSeat = { label: string; row: string };
 export type SeatInfo = { total: number; free: FreeSeat[] };
 
 export async function freeSeats(): Promise<SeatInfo> {
-  const staff = await getStaff();
+  const staff = await frontDesk();
   if (!staff) return { total: 0, free: [] };
   const centre = staff.centre_id ?? 1;
   const [{ data }, { count }] = await Promise.all([
@@ -146,7 +163,7 @@ export async function freeSeats(): Promise<SeatInfo> {
 // ---------- Payments ----------
 
 export async function markPaid(groupId: string): Promise<{ ok: boolean }> {
-  const staff = await getStaff();
+  const staff = await frontDesk();
   if (!staff || !/^[0-9a-f-]{36}$/.test(groupId)) return { ok: false };
   const { error } = await db().rpc('staff_mark_paid', { p_group: groupId, p_staff: staff.id });
   if (error) {
@@ -174,7 +191,7 @@ const SLOT_ERRORS: Record<string, string> = {
 };
 
 export async function saveSlot(_prev: SlotState, form: FormData): Promise<SlotState> {
-  const staff = await getStaff();
+  const staff = await frontDesk();
   if (!staff) redirect('/staff/login');
   const id = String(form.get('id') ?? '');
   const date = String(form.get('date') ?? '');

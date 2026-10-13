@@ -2,13 +2,14 @@
 
 import { useActionState } from 'react';
 import { saveSlot, type SlotState } from '../actions';
+import { keepFields } from '@/lib/keepForm';
 import type { SlotRow } from '@/lib/staffData';
 
 export default function SlotForm({ slot, minDate }: { slot?: SlotRow; minDate: string }) {
   const [state, action, pending] = useActionState<SlotState, FormData>(saveSlot, null);
   const isNew = !slot;
   return (
-    <form action={action} className={`slot-form ${isNew ? 'new' : ''}`}>
+    <form onSubmit={keepFields(action)} className={`slot-form ${isNew ? 'new' : ''}`}>
       {slot && <input type="hidden" name="id" value={slot.id} />}
       <div className="slot-fields">
         {isNew && (

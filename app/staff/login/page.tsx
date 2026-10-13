@@ -1,11 +1,12 @@
 import { redirect } from 'next/navigation';
-import { getStaff } from '@/lib/staff';
+import { getStaff, homeFor } from '@/lib/staff';
 import LoginForm from './LoginForm';
 
 export const dynamic = 'force-dynamic';
 
 export default async function LoginPage() {
-  if (await getStaff()) redirect('/staff/scan');
+  const staff = await getStaff();
+  if (staff) redirect(homeFor(staff.role));
   return (
     <main className="shell staff-shell staff-login-page">
       <section className="login-hero glass">

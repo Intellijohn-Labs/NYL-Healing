@@ -38,13 +38,6 @@ const ICONS: Record<string, React.ReactNode> = {
       <path d="M3.5 10h17M8 3v4M16 3v4M12 13v4M10 15h4" />
     </>
   ),
-  photo: (
-    <>
-      <rect x="3.5" y="6.5" width="17" height="13" rx="2.5" />
-      <path d="M8.5 6.5l1.4-2.2h4.2l1.4 2.2" />
-      <circle cx="12" cy="13" r="3.4" />
-    </>
-  ),
   rooms: (
     <>
       <path d="M3 18V7M21 18v-5a3 3 0 0 0-3-3h-8v8M3 14h18M3 18h18" />
@@ -59,7 +52,6 @@ const TABS = [
   { key: 'bookings', href: '/staff/bookings', label: 'Bookings', roles: FRONT_DESK_ROLES },
   { key: 'patients', href: '/staff/patients', label: 'Patients', roles: FRONT_DESK_ROLES },
   { key: 'days', href: '/staff/days', label: 'Days', roles: FRONT_DESK_ROLES },
-  { key: 'photo', href: '/staff/photo-healing', label: 'Photo', roles: FRONT_DESK_ROLES },
   { key: 'rooms', href: '/staff/rooms', label: 'Rooms', roles: ROOM_SETTINGS_ROLES },
 ] as const;
 

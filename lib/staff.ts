@@ -6,7 +6,14 @@ import { db } from './supabase';
 
 export const STAFF_COOKIE = 'nyl_staff';
 export const SESSION_HOURS = 12; // one working day
-export const SCAN_ROLES = ['owner', 'reception', 'gate'];
+// Who may use which part of the staff app
+export const FRONT_DESK_ROLES = ['owner', 'reception', 'gate']; // scanner, today, bookings, patients, days
+export const ROOM_SETTINGS_ROLES = ['owner', 'rooms_manager']; // hotels, room types, prices, rooms
+export const STAFF_ROLES = [...new Set([...FRONT_DESK_ROLES, ...ROOM_SETTINGS_ROLES])]; // may sign in at all
+export const SCAN_ROLES = FRONT_DESK_ROLES; // kept for older code
+
+// Where each role lands after signing in
+export const homeFor = (role: string) => (FRONT_DESK_ROLES.includes(role) ? '/staff/scan' : '/staff/rooms');
 
 export type Staff = { id: string; name: string; role: string; centre_id: number | null };
 
@@ -50,12 +57,20 @@ export async function getStaff(): Promise<Staff | null> {
     .select('id, name, role, centre_id, active')
     .eq('id', sid)
     .maybeSingle();
-  if (!data || !data.active || !SCAN_ROLES.includes(data.role)) return null;
+  if (!data || !data.active || !STAFF_ROLES.includes(data.role)) return null;
   return { id: data.id, name: data.name, role: data.role, centre_id: data.centre_id };
 }
 
-export async function requireStaff(): Promise<Staff> {
+// Signed in AND allowed on this screen; otherwise sent to sign-in or to their own home screen
+export async function requireStaff(roles: string[] = FRONT_DESK_ROLES): Promise<Staff> {
   const staff = await getStaff();
   if (!staff) redirect('/staff/login');
+  if (!roles.includes(staff.role)) redirect(homeFor(staff.role));
   return staff;
+}
+
+// For server actions: the staff member if they have one of these roles, else null
+export async function staffWithRole(roles: string[]): Promise<Staff | null> {
+  const staff = await getStaff();
+  return staff && roles.includes(staff.role) ? staff : null;
 }
