@@ -24,6 +24,11 @@ export default async function PhotoHealingPage({ searchParams }: { searchParams:
         Session times for distance healing, in India time. The WhatsApp bot uses these times when patients book.
       </p>
 
+      {staff.role === 'owner' && (
+        <p className="hint">
+          <Link href="/staff/healing">Open the healers&apos; screen (photos for each session) →</Link>
+        </p>
+      )}
       <nav className="ph-switch" aria-label="Photo Healing views">
         <Link href="/staff/photo-healing" className={showDefaults ? '' : 'on'} aria-current={showDefaults ? undefined : 'page'}>
           Upcoming days

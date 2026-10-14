@@ -9,11 +9,13 @@ export const SESSION_HOURS = 12; // one working day
 // Who may use which part of the staff app
 export const FRONT_DESK_ROLES = ['owner', 'reception', 'gate']; // scanner, today, bookings, patients, days
 export const ROOM_SETTINGS_ROLES = ['owner', 'rooms_manager']; // hotels, room types, prices, rooms
-export const STAFF_ROLES = [...new Set([...FRONT_DESK_ROLES, ...ROOM_SETTINGS_ROLES])]; // may sign in at all
+export const HEALER_ROLES = ['owner', 'healer']; // photo healing screen for the healers
+export const STAFF_ROLES = [...new Set([...FRONT_DESK_ROLES, ...ROOM_SETTINGS_ROLES, ...HEALER_ROLES])]; // may sign in at all
 export const SCAN_ROLES = FRONT_DESK_ROLES; // kept for older code
 
 // Where each role lands after signing in
-export const homeFor = (role: string) => (FRONT_DESK_ROLES.includes(role) ? '/staff/scan' : '/staff/rooms');
+export const homeFor = (role: string) =>
+  FRONT_DESK_ROLES.includes(role) ? '/staff/scan' : role === 'healer' ? '/staff/healing' : '/staff/rooms';
 
 export type Staff = { id: string; name: string; role: string; centre_id: number | null };
 
