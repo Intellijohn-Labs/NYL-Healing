@@ -18,7 +18,7 @@ export default async function HotelPage({ params }: { params: Promise<{ id: stri
   return (
     <StaffShell staff={staff} active="rooms">
       <p className="hint">
-        <Link href="/staff/rooms">← All hotels</Link>
+        <Link href="/staff/rooms/settings">← All hotels</Link>
       </p>
       <div className="review-hd">
         <h1 className="step-title">{hotel.name}</h1>

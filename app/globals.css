@@ -3274,3 +3274,311 @@ fieldset[aria-invalid='true'] .dis-opt {
 .dis-tags .tag {
   margin: 0;
 }
+
+/* ---------- Room bookings ---------- */
+.rooms-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+.rooms-nav .ph-switch {
+  margin-bottom: 0;
+  grid-template-columns: repeat(4, auto);
+}
+.rooms-nav-right {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.hotel-pick {
+  display: flex;
+  gap: 0.375rem;
+}
+.hotel-pick select {
+  min-height: 2.5rem;
+  border-radius: 12px;
+  padding: 0 0.625rem;
+  font: inherit;
+}
+.btn.primary.small {
+  min-height: 2.5rem;
+  padding: 0 1rem;
+}
+.rd-date {
+  display: block;
+  font-family: 'Noto Sans', sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.rd-free {
+  margin-top: -0.25rem;
+}
+.rd-list {
+  margin-top: 1.25rem;
+}
+.rd-row {
+  display: grid;
+  grid-template-columns: 3rem 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+  color: var(--ink) !important;
+  text-decoration: none;
+}
+.rd-room {
+  font-family: var(--display, inherit);
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-align: center;
+}
+.rd-extra {
+  display: grid;
+  justify-items: end;
+  gap: 0.125rem;
+}
+.rd-left {
+  color: #f1cf8c;
+  font-size: 0.8125rem;
+}
+.cal-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.cal-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-inline-start: auto;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+.lg {
+  display: inline-block;
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: 4px;
+  margin-inline-start: 0.375rem;
+}
+.cal-wrap {
+  overflow-x: auto;
+  border-radius: 16px;
+  border: 1px solid var(--glass-line, var(--line));
+  background: var(--glass, #fff);
+}
+.cal {
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 100%;
+  font-size: 0.8125rem;
+}
+.cal th,
+.cal td {
+  padding: 0;
+  text-align: center;
+  border-bottom: 1px solid var(--line);
+  border-inline-start: 1px solid var(--line);
+  min-width: 2.75rem;
+  height: 2.5rem;
+}
+.cal thead th {
+  padding: 0.375rem 0.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.cal thead th span {
+  display: block;
+  font-weight: 400;
+  color: var(--muted);
+}
+.cal thead th.is-today {
+  background: rgba(185, 213, 166, 0.18);
+}
+.cal .cal-room {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  min-width: 6.5rem;
+  padding: 0 0.625rem;
+  text-align: start;
+  background: #16302a;
+  font-weight: 700;
+  border-inline-start: 0;
+}
+.cal .cal-room small {
+  display: block;
+  font-weight: 400;
+  color: var(--muted);
+}
+.cal-type td,
+.cal-type th {
+  background: rgba(255, 255, 255, 0.04);
+}
+.cal-free {
+  font-weight: 700;
+  color: #a9e4b8;
+}
+.cal-free.none {
+  color: #ffb1a9;
+}
+.cal-cell a {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  min-height: 2.5rem;
+  color: #fff !important;
+  font-weight: 800;
+  text-decoration: none;
+}
+.cal-cell.free a:hover {
+  background: rgba(185, 213, 166, 0.15);
+}
+.cal-cell.held,
+.lg.held {
+  background: rgba(200, 140, 40, 0.75);
+}
+.cal-cell.confirmed,
+.lg.confirmed {
+  background: rgba(60, 140, 200, 0.7);
+}
+.cal-cell.checked_in,
+.lg.checked_in {
+  background: rgba(60, 160, 100, 0.8);
+}
+.cal-cell.checked_out {
+  background: rgba(255, 255, 255, 0.12);
+}
+.cal-cell.blocked,
+.lg.blocked {
+  background: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.08) 0 6px, rgba(255, 255, 255, 0.02) 6px 12px);
+  color: var(--muted);
+}
+.cal-unassigned th {
+  font-style: italic;
+}
+.rb-filter {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0.75rem;
+  align-items: end;
+  margin-bottom: 1rem;
+}
+.rb-filter .rb-q {
+  grid-column: span 2;
+}
+.rb-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+}
+.tag.st-held {
+  background: rgba(230, 180, 90, 0.18);
+  color: #f1cf8c;
+}
+.tag.st-confirmed {
+  background: rgba(60, 140, 200, 0.2);
+  color: #a9d2f1;
+}
+.tag.st-checked_in {
+  background: rgba(120, 200, 140, 0.18);
+  color: #a9e4b8;
+}
+.tag.st-cancelled,
+.tag.st-expired,
+.tag.st-checked_out {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--muted);
+}
+.rb-status {
+  display: inline-block;
+  margin: 0 0 1rem;
+  padding: 0.375rem 0.875rem;
+  border-radius: 999px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.08);
+}
+.rb-status.st-held {
+  background: rgba(230, 180, 90, 0.18);
+  color: #f1cf8c;
+}
+.rb-status.st-confirmed {
+  background: rgba(60, 140, 200, 0.2);
+  color: #a9d2f1;
+}
+.rb-status.st-checked_in {
+  background: rgba(120, 200, 140, 0.18);
+  color: #a9e4b8;
+}
+.rb-actions {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.rb-act {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.625rem 0.75rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--line);
+}
+.rb-act .rf {
+  min-width: 10rem;
+  flex: 1 1 10rem;
+}
+.rb-act .rf.wide {
+  flex-basis: 100%;
+}
+.rb-act p {
+  margin: 0;
+  flex-basis: 100%;
+}
+.btn.danger,
+.btn.small.danger {
+  color: #ffb1a9 !important;
+  border-color: rgba(255, 120, 110, 0.4) !important;
+}
+.nb-form {
+  gap: 1rem;
+}
+.nb-quick {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.nb-quote .kv {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.375rem 0;
+}
+.nb-quote .kv b {
+  font-size: 1.125rem;
+}
+/* Buttons that are links: no underline, right text colour */
+.staff-theme a.btn {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.staff-theme a.btn.primary {
+  color: var(--pill-ink) !important;
+}
+.staff-theme a.btn.small:not(.primary) {
+  color: var(--ink) !important;
+}
+.staff-theme .btn.primary.small {
+  background: var(--pill);
+  color: var(--pill-ink) !important;
+  border: 0;
+  box-shadow: 0 4px 14px rgba(181, 209, 159, 0.28);
+}
