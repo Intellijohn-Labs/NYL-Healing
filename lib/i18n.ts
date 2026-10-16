@@ -89,6 +89,10 @@ export type Dict = {
   phoneInvalid: string;
   optional: string;
   healthConcerns: string;
+  designation: string;
+  diseases: string;
+  diseasesOther: string;
+  diseasesError: string;
   healthHint: string;
   medicines: string;
   notes: string;
@@ -184,7 +188,11 @@ const en: Dict = {
   guardianRelation: 'Relation to the patient',
   guardianPhone: "Parent or guardian's phone",
   optional: 'optional',
-  healthConcerns: 'What health problems do you want treatment for?',
+  designation: 'Designation / occupation',
+  diseases: 'Diseases (tick all that apply)',
+  diseasesOther: 'Which other disease?',
+  diseasesError: 'Please tick at least one.',
+  healthConcerns: 'Anything more about the health problems?',
   healthHint: 'You can write in any language.',
   medicines: 'Medicines you take now',
   notes: 'Anything else the healer should know',
@@ -284,7 +292,11 @@ const ml: Dict = {
   guardianRelation: 'രോഗിയുമായുള്ള ബന്ധം',
   guardianPhone: 'മാതാപിതാക്കളുടെ / രക്ഷാധികാരിയുടെ ഫോൺ നമ്പർ',
   optional: 'നിർബന്ധമില്ല',
-  healthConcerns: 'ഏതെല്ലാം ആരോഗ്യ പ്രശ്നങ്ങൾക്കാണ് ചികിത്സ വേണ്ടത്?',
+  designation: 'ജോലി / പദവി',
+  diseases: 'രോഗങ്ങൾ (ബാധകമായവയെല്ലാം ടിക്ക് ചെയ്യുക)',
+  diseasesOther: 'മറ്റ് ഏത് രോഗം?',
+  diseasesError: 'കുറഞ്ഞത് ഒന്നെങ്കിലും ടിക്ക് ചെയ്യുക.',
+  healthConcerns: 'ആരോഗ്യ പ്രശ്നങ്ങളെക്കുറിച്ച് കൂടുതൽ എന്തെങ്കിലും?',
   healthHint: 'ഏത് ഭാഷയിലും എഴുതാം.',
   medicines: 'ഇപ്പോൾ കഴിക്കുന്ന മരുന്നുകൾ',
   notes: 'ഹീലർ അറിയേണ്ട മറ്റെന്തെങ്കിലും',
@@ -383,7 +395,11 @@ const ta: Dict = {
   guardianRelation: 'நோயாளருடன் உறவு',
   guardianPhone: 'பெற்றோர் / பாதுகாவலர் தொலைபேசி',
   optional: 'விருப்பம்',
-  healthConcerns: 'எந்த உடல்நலப் பிரச்சினைகளுக்கு சிகிச்சை வேண்டும்?',
+  designation: 'பணி / பதவி',
+  diseases: 'நோய்கள் (பொருந்தும் அனைத்தையும் தேர்ந்தெடுக்கவும்)',
+  diseasesOther: 'வேறு எந்த நோய்?',
+  diseasesError: 'குறைந்தது ஒன்றைத் தேர்ந்தெடுக்கவும்.',
+  healthConcerns: 'உடல்நலப் பிரச்சினைகள் பற்றி வேறு ஏதாவது?',
   healthHint: 'எந்த மொழியிலும் எழுதலாம்.',
   medicines: 'இப்போது எடுக்கும் மருந்துகள்',
   notes: 'ஹீலர் அறிய வேண்டிய வேறு ஏதேனும்',
@@ -480,7 +496,11 @@ const hi: Dict = {
   guardianRelation: 'मरीज़ से रिश्ता',
   guardianPhone: 'माता-पिता / अभिभावक का फ़ोन',
   optional: 'वैकल्पिक',
-  healthConcerns: 'आप किन स्वास्थ्य समस्याओं का उपचार चाहते हैं?',
+  designation: 'पद / व्यवसाय',
+  diseases: 'रोग (जो भी लागू हों, सब चुनें)',
+  diseasesOther: 'और कौन सा रोग?',
+  diseasesError: 'कम से कम एक चुनें।',
+  healthConcerns: 'स्वास्थ्य समस्याओं के बारे में कुछ और?',
   healthHint: 'आप किसी भी भाषा में लिख सकते हैं।',
   medicines: 'अभी ली जा रही दवाएँ',
   notes: 'हीलर को और कुछ बताना हो तो',
@@ -577,7 +597,11 @@ const kn: Dict = {
   guardianRelation: 'ರೋಗಿಯೊಂದಿಗೆ ಸಂಬಂಧ',
   guardianPhone: 'ಪೋಷಕರು / ರಕ್ಷಕರ ಫೋನ್',
   optional: 'ಐಚ್ಛಿಕ',
-  healthConcerns: 'ಯಾವ ಆರೋಗ್ಯ ಸಮಸ್ಯೆಗಳಿಗೆ ಚಿಕಿತ್ಸೆ ಬೇಕು?',
+  designation: 'ಹುದ್ದೆ / ಉದ್ಯೋಗ',
+  diseases: 'ಕಾಯಿಲೆಗಳು (ಅನ್ವಯವಾಗುವ ಎಲ್ಲವನ್ನೂ ಆಯ್ಕೆಮಾಡಿ)',
+  diseasesOther: 'ಬೇರೆ ಯಾವ ಕಾಯಿಲೆ?',
+  diseasesError: 'ಕನಿಷ್ಠ ಒಂದನ್ನು ಆಯ್ಕೆಮಾಡಿ.',
+  healthConcerns: 'ಆರೋಗ್ಯ ಸಮಸ್ಯೆಗಳ ಬಗ್ಗೆ ಇನ್ನೇನಾದರೂ?',
   healthHint: 'ಯಾವುದೇ ಭಾಷೆಯಲ್ಲಿ ಬರೆಯಬಹುದು.',
   medicines: 'ಈಗ ತೆಗೆದುಕೊಳ್ಳುತ್ತಿರುವ ಔಷಧಿಗಳು',
   notes: 'ಹೀಲರ್ ತಿಳಿಯಬೇಕಾದ ಬೇರೆ ಏನಾದರೂ',
@@ -674,7 +698,11 @@ const ar: Dict = {
   guardianRelation: 'صلة القرابة بالمريض',
   guardianPhone: 'هاتف الوالد أو الوصي',
   optional: 'اختياري',
-  healthConcerns: 'ما المشكلات الصحية التي تريد علاجها؟',
+  designation: 'المسمى الوظيفي / المهنة',
+  diseases: 'الأمراض (اختر كل ما ينطبق)',
+  diseasesOther: 'ما المرض الآخر؟',
+  diseasesError: 'يرجى اختيار خيار واحد على الأقل.',
+  healthConcerns: 'هل هناك شيء آخر عن المشكلات الصحية؟',
   healthHint: 'يمكنك الكتابة بأي لغة.',
   medicines: 'الأدوية التي تتناولها حالياً',
   notes: 'أي شيء آخر يجب أن يعرفه المعالج',

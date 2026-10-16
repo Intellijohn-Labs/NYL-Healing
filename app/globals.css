@@ -3207,3 +3207,70 @@ body:has(.staff-theme) {
 .hb-viewer-photo img {
   max-height: calc(100dvh - 11rem);
 }
+
+/* Registration form: disease tick boxes */
+.dis-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+@media (min-width: 560px) {
+  .dis-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.dis-opt {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3rem;
+  padding: 0.5rem 0.875rem;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  font-weight: 400 !important;
+  cursor: pointer;
+}
+.dis-opt input {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: none;
+  accent-color: var(--leaf);
+  margin: 0;
+}
+.dis-opt.checked {
+  border-color: var(--leaf);
+  background: var(--sage);
+  font-weight: 600 !important;
+}
+.dis-opt:focus-within {
+  outline: 3px solid var(--leaf);
+  outline-offset: 2px;
+}
+fieldset[aria-invalid='true'] .dis-opt {
+  border-color: var(--error);
+}
+.day-pick > input,
+.dis-select {
+  min-height: 3rem;
+  font: inherit;
+  padding: 0.5rem 0.875rem;
+  border-radius: 12px;
+}
+.dis-select {
+  flex: 1;
+  min-width: 0;
+}
+.day-pick > label + input,
+.day-pick > input + label {
+  margin-top: 0.25rem;
+}
+.dis-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+.dis-tags .tag {
+  margin: 0;
+}

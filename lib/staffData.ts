@@ -63,6 +63,8 @@ export type SearchRow = {
   gender: string | null;
   city: string | null;
   wa_phone: string | null;
+  designation: string | null;
+  diseases: string[];
   last_visit: string | null;
 };
 
@@ -72,6 +74,7 @@ export type PatientDetail = {
   dob: string | null;
   gender: string | null;
   city: string | null;
+  designation: string | null;
   wa_phone: string | null;
   language: string | null;
   source_channel: string | null;
@@ -80,7 +83,13 @@ export type PatientDetail = {
   guardian_relation: string | null;
   guardian_phone: string | null;
   pass_token: string;
-  health: { health_concerns: string; current_medicines: string | null; other_notes: string | null } | null;
+  health: {
+    health_concerns: string;
+    diseases: string[] | null;
+    diseases_other: string | null;
+    current_medicines: string | null;
+    other_notes: string | null;
+  } | null;
   registrations: {
     slot_date: string;
     starts_at: string | null;
@@ -108,6 +117,7 @@ export type SlotRow = {
 
 export const todaySummary = (centre: number) => rpc<TodaySummary>('staff_today_summary', { p_centre: centre });
 export const dayBookings = (date: string, centre: number) => rpc<DayBookings>('staff_day_bookings', { p_date: date, p_centre: centre });
-export const searchPatients = (q: string) => rpc<SearchRow[]>('staff_search_patients', { p_q: q });
+export const searchPatients = (q: string, disease?: string) =>
+  rpc<SearchRow[]>('staff_search_patients', { p_q: q, p_disease: disease || null });
 export const patientDetail = (code: string) => rpc<PatientDetail | null>('staff_patient_detail', { p_code: code });
 export const listSlots = (centre: number) => rpc<SlotRow[]>('staff_list_slots', { p_centre: centre });

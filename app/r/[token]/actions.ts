@@ -5,6 +5,7 @@ import { isLang } from '@/lib/i18n';
 import { MAX_PATIENTS, ONLINE_PAYMENT_ENABLED, REGISTRATION_FEE } from '@/lib/config';
 import { toPass, type RawPass } from '@/lib/pass';
 import { normalizePhone } from '@/lib/phone';
+import { isDisease } from '@/lib/diseases';
 import type { PassData } from '@/lib/types';
 
 export type PatientInput = {
@@ -13,12 +14,15 @@ export type PatientInput = {
   dob: string; // YYYY-MM-DD
   gender: string;
   city: string;
+  designation: string; // optional
   guardianName: string;
   guardianRelation: string; // father | mother | other
   guardianRelationOther: string;
   guardianPhone: string;
   guardianConsent: boolean;
-  healthConcerns: string;
+  diseases: string[]; // codes from lib/diseases.ts, at least one
+  diseasesOther: string; // needed when "other" is ticked
+  healthConcerns: string; // optional now
   currentMedicines: string;
   otherNotes: string;
   consent: boolean;
@@ -61,7 +65,10 @@ export async function register(input: RegisterInput): Promise<RegisterResult> {
         !p.consent ||
         !clip(p.fullName, 120) ||
         !clip(p.city, 120) ||
-        !clip(p.healthConcerns, 4000) ||
+        !Array.isArray(p.diseases) ||
+        p.diseases.length === 0 ||
+        !p.diseases.every(isDisease) ||
+        (p.diseases.includes('other') && !clip(p.diseasesOther, 120)) ||
         !/^\d{4}-\d{2}-\d{2}$/.test(clip(p.dob, 10)) ||
         !['male', 'female', 'other'].includes(p.gender) ||
         !['self', 'child', 'parent', 'spouse', 'other'].includes(p.registeringFor) ||
@@ -77,10 +84,13 @@ export async function register(input: RegisterInput): Promise<RegisterResult> {
     dob: clip(p.dob, 10),
     gender: p.gender,
     city: clip(p.city, 120),
+    designation: clip(p.designation, 80),
     guardian_name: clip(p.guardianName, 120),
     guardian_relation: relationOf(p),
     guardian_phone: normalizePhone(p.guardianPhone) ?? '',
     guardian_consent: p.guardianConsent === true,
+    diseases: [...new Set(p.diseases)],
+    diseases_other: p.diseases.includes('other') ? clip(p.diseasesOther, 120) : '',
     health_concerns: clip(p.healthConcerns, 4000),
     current_medicines: clip(p.currentMedicines, 2000),
     other_notes: clip(p.otherNotes, 2000),

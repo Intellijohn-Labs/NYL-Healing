@@ -5,6 +5,7 @@ import { patientDetail } from '@/lib/staffData';
 import { ageOf, dayLabel, FOR, GENDER, phone, relation, rupees, slotTime, timeOf } from '@/lib/format';
 import StaffShell from '@/components/staff/StaffShell';
 import MarkPaidButton from '@/components/staff/MarkPaidButton';
+import { diseaseLabel } from '@/lib/diseases';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,6 +22,7 @@ export default async function PatientPage({ params }: { params: Promise<{ code: 
     ['Age / gender', [age !== null ? `${age} yrs` : '', GENDER[p.gender ?? ''] ?? ''].filter(Boolean).join(', ')],
     ['Date of birth', p.dob ? dayLabel(p.dob, true) : ''],
     ['Town', p.city ?? ''],
+    ...(p.designation ? ([['Designation', p.designation]] as [string, string][]) : []),
     ['WhatsApp', phone(p.wa_phone)],
     ...(p.guardian_name
       ? ([
@@ -61,10 +63,26 @@ export default async function PatientPage({ params }: { params: Promise<{ code: 
         <section className="review-card">
           <h2 className="card-h">Health details</h2>
           <dl>
-            <div className="dl-row">
-              <dt>Health problems</dt>
-              <dd>{p.health.health_concerns}</dd>
-            </div>
+            {(p.health.diseases ?? []).length > 0 && (
+              <div className="dl-row">
+                <dt>Diseases</dt>
+                <dd>
+                  <span className="dis-tags">
+                    {(p.health.diseases ?? []).map((d) => (
+                      <span key={d} className="tag">
+                        {d === 'other' && p.health?.diseases_other ? `${diseaseLabel(d)}: ${p.health.diseases_other}` : diseaseLabel(d)}
+                      </span>
+                    ))}
+                  </span>
+                </dd>
+              </div>
+            )}
+            {p.health.health_concerns && (
+              <div className="dl-row">
+                <dt>Health problems</dt>
+                <dd>{p.health.health_concerns}</dd>
+              </div>
+            )}
             {p.health.current_medicines && (
               <div className="dl-row">
                 <dt>Medicines</dt>

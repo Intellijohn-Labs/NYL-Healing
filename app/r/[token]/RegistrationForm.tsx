@@ -9,6 +9,7 @@ import PatientPass from '@/components/PatientPass';
 import SavePassButton from '@/components/SavePassButton';
 import { normalizePhone } from '@/lib/phone';
 import { register, type PatientInput, type RegisterResult } from './actions';
+import { DISEASES, diseaseLabel } from '@/lib/diseases';
 
 type P = PatientInput;
 type PKey = keyof P;
@@ -20,11 +21,14 @@ const EMPTY: P = {
   dob: '',
   gender: '',
   city: '',
+  designation: '',
   guardianName: '',
   guardianRelation: '',
   guardianRelationOther: '',
   guardianPhone: '',
   guardianConsent: false,
+  diseases: [],
+  diseasesOther: '',
   healthConcerns: '',
   currentMedicines: '',
   otherNotes: '',
@@ -92,7 +96,8 @@ function validatePatient(p: P, i: number, t: Dict, today: string): Errors {
     else if (!normalizePhone(p.guardianPhone)) e[k('guardianPhone')] = t.phoneInvalid;
     if (!p.guardianConsent) e[k('guardianConsent')] = t.consentError;
   }
-  if (!p.healthConcerns.trim()) e[k('healthConcerns')] = t.required;
+  if (!p.diseases.length) e[k('diseases')] = t.diseasesError;
+  else if (p.diseases.includes('other') && !p.diseasesOther.trim()) e[k('diseasesOther')] = t.required;
   if (!p.consent) e[k('consent')] = t.consentError;
   return e;
 }
@@ -443,6 +448,7 @@ export default function RegistrationForm({ token, lang, slots }: { token: string
         {Text({ i, field: 'dob', label: t.dob, len: 10, type: 'date', min: '1900-01-01', max: today })}
         {Radios({ i, field: 'gender', options: genderLabels, legend: t.gender })}
         {Text({ i, field: 'city', label: t.city, len: 120, autoComplete: 'address-level2' })}
+        {Text({ i, field: 'designation', label: t.designation, optional: true, len: 80, autoComplete: 'organization-title' })}
 
         {minor && (
           <div className="guardian">
@@ -491,19 +497,29 @@ export default function RegistrationForm({ token, lang, slots }: { token: string
         )}
 
         <h2 className="section">{t.secHealth}</h2>
-        <div className="field">
-          <label htmlFor={`f-${i}-healthConcerns`}>{t.healthConcerns}</label>
-          <p className="hint">{t.healthHint}</p>
-          <textarea
-            id={`f-${i}-healthConcerns`}
-            rows={4}
-            value={p.healthConcerns}
-            onChange={(e) => setP(i, 'healthConcerns', e.target.value)}
-            maxLength={4000}
-            {...aria(`${i}.healthConcerns`)}
-          />
-          {err(`${i}.healthConcerns`)}
-        </div>
+        <fieldset className="field" id={`f-${i}-diseases`} tabIndex={-1} aria-invalid={!!errors[`${i}.diseases`] || undefined}>
+          <legend>{t.diseases}</legend>
+          <div className="dis-grid">
+            {DISEASES.map((d) => {
+              const on = p.diseases.includes(d);
+              return (
+                <label key={d} className={`dis-opt ${on ? 'checked' : ''}`}>
+                  <input
+                    type="checkbox"
+                    checked={on}
+                    onChange={(e) =>
+                      setP(i, 'diseases', (e.target.checked ? [...p.diseases, d] : p.diseases.filter((x) => x !== d)) as never)
+                    }
+                  />
+                  <span>{diseaseLabel(d, lang)}</span>
+                </label>
+              );
+            })}
+          </div>
+          {err(`${i}.diseases`)}
+        </fieldset>
+        {p.diseases.includes('other') && Text({ i, field: 'diseasesOther', label: t.diseasesOther, len: 120 })}
+        {Text({ i, field: 'healthConcerns', label: t.healthConcerns, optional: true, area: true, rows: 3, len: 4000 })}
         {Text({ i, field: 'currentMedicines', label: t.medicines, optional: true, area: true, len: 2000 })}
         {Text({ i, field: 'otherNotes', label: t.notes, optional: true, area: true, len: 2000 })}
         {Check({ i, field: 'consent', text: t.consent })}
@@ -527,6 +543,7 @@ export default function RegistrationForm({ token, lang, slots }: { token: string
             [t.dob, `${p.dob ? formatDate(p.dob, lang) : ''}${age !== null ? ` (${fill(t.years, age)})` : ''}`],
             [t.gender, labelOf(genderLabels, p.gender)],
             [t.city, p.city],
+            ...(p.designation.trim() ? ([[t.designation, p.designation]] as [string, string][]) : []),
             ...(minor
               ? ([
                   [t.guardianName, p.guardianName],
@@ -534,7 +551,13 @@ export default function RegistrationForm({ token, lang, slots }: { token: string
                   [t.guardianPhone, p.guardianPhone],
                 ] as [string, string][])
               : []),
-            [t.healthConcerns, p.healthConcerns],
+            [
+              t.diseases.replace(/\s*\(.*\)\s*$/, ''),
+              p.diseases
+                .map((d) => (d === 'other' && p.diseasesOther.trim() ? `${diseaseLabel(d, lang)}: ${p.diseasesOther.trim()}` : diseaseLabel(d, lang)))
+                .join(', '),
+            ],
+            ...(p.healthConcerns.trim() ? ([[t.healthConcerns, p.healthConcerns]] as [string, string][]) : []),
             ...(p.currentMedicines.trim() ? ([[t.medicines, p.currentMedicines]] as [string, string][]) : []),
             ...(p.otherNotes.trim() ? ([[t.notes, p.otherNotes]] as [string, string][]) : []),
           ];
