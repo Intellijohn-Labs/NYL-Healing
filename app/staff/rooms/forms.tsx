@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useRef, useState } from 'react';
 import type { Hotel, Room, RoomBlock, RoomType } from '@/lib/rooms';
 import { keepFields } from '@/lib/keepForm';
+import PhotoManager from './PhotoManager';
 import { addBlock, addHotel, addRooms, removeBlock, roomAction, saveHotel, saveRoomType, type FormState } from './actions';
 
 const rupees = (n: number) => `₹${n.toLocaleString('en-IN')}`;
@@ -225,11 +226,20 @@ function RoomTypeForm({ hotelId, type, onDone }: { hotelId: string; type?: RoomT
   );
 }
 
-export function RoomTypeCard({ type, roomCount }: { type: RoomType; roomCount: number }) {
+export function RoomTypeCard({ type, roomCount, photos = [] }: { type: RoomType; roomCount: number; photos?: { id: string; url: string }[] }) {
   const [editing, setEditing] = useState(false);
+  const [showPhotos, setShowPhotos] = useState(false);
   return (
     <section className={`day-card ${type.active ? '' : 'muted'}`}>
-      <div className="rt-main">
+      <div className="rt-main has-thumb">
+        <button type="button" className="rt-thumb" onClick={() => setShowPhotos((v) => !v)} aria-label={`Photos of ${type.name}`}>
+          {photos[0] ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={photos[0].url} alt="" />
+          ) : (
+            <span>+ Photo</span>
+          )}
+        </button>
         <div>
           <p className="day-card-date">{type.name}</p>
           <p className="day-card-time">
@@ -259,6 +269,17 @@ export function RoomTypeCard({ type, roomCount }: { type: RoomType; roomCount: n
       {editing && (
         <div className="day-card-edit">
           <RoomTypeForm hotelId={type.hotel_id} type={type} />
+        </div>
+      )}
+      {(showPhotos || editing) && (
+        <div className="day-card-edit">
+          <PhotoManager
+            hotelId={type.hotel_id}
+            roomTypeId={type.id}
+            photos={photos}
+            title={`Photos of ${type.name}`}
+            hint="The first photo is the cover. Patients will see these when booking."
+          />
         </div>
       )}
     </section>

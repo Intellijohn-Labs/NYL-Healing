@@ -2,6 +2,8 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Room photos are shrunk in the browser and sent one at a time, so a few MB per request is plenty
+  experimental: { serverActions: { bodySizeLimit: '4mb' } },
   async headers() {
     return [
       {

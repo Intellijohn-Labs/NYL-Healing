@@ -37,6 +37,13 @@ export type RoomType = {
 };
 
 export type Room = { id: string; hotel_id: string; room_type_id: string; label: string; active: boolean; sort_order: number };
+export type RoomPhoto = { id: string; room_type_id: string | null; storage_path: string; sort_order: number; url: string };
+
+// Room photos are in a public bucket, so their address is fixed
+export const ROOM_PHOTO_BUCKET = 'room-photos';
+export const roomPhotoUrl = (path: string) =>
+  `${process.env.SUPABASE_URL}/storage/v1/object/public/${ROOM_PHOTO_BUCKET}/${path.split('/').map(encodeURIComponent).join('/')}`;
+
 export type RoomBlock = { id: string; room_id: string; start_date: string; end_date: string; reason: string | null };
 
 export type HotelSummary = Hotel & { type_count: number; room_count: number; active_room_count: number };
@@ -69,10 +76,17 @@ export async function getHotel(id: string) {
   const { data: blocks } = roomIds.length
     ? await db().from('room_blocks').select('*').in('room_id', roomIds).gte('end_date', today).order('start_date')
     : { data: [] };
+  const { data: photos } = await db()
+    .from('room_photos')
+    .select('id, room_type_id, storage_path, sort_order')
+    .eq('hotel_id', id)
+    .order('sort_order')
+    .order('created_at');
   return {
     hotel: hotel as Hotel,
     types: (types ?? []) as RoomType[],
     rooms: (rooms ?? []) as Room[],
     blocks: (blocks ?? []) as RoomBlock[],
+    photos: (photos ?? []).map((p) => ({ ...p, url: roomPhotoUrl(p.storage_path) })) as RoomPhoto[],
   };
 }

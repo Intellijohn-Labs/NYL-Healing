@@ -4,6 +4,7 @@ import { requireStaff, ROOM_SETTINGS_ROLES } from '@/lib/staff';
 import { getHotel } from '@/lib/rooms';
 import StaffShell from '@/components/staff/StaffShell';
 import { AddRoomType, AddRoomsForm, HotelForm, RoomRow, RoomTypeCard } from '../forms';
+import PhotoManager from '../PhotoManager';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +13,8 @@ export default async function HotelPage({ params }: { params: Promise<{ id: stri
   const { id } = await params;
   const data = await getHotel(id);
   if (!data) notFound();
-  const { hotel, types, rooms, blocks } = data;
+  const { hotel, types, rooms, blocks, photos } = data;
+  const photosOf = (typeId: string | null) => photos.filter((p) => p.room_type_id === typeId).map((p) => ({ id: p.id, url: p.url }));
   const activeRooms = rooms.filter((r) => r.active).length;
 
   return (
@@ -27,6 +29,7 @@ export default async function HotelPage({ params }: { params: Promise<{ id: stri
       <nav className="jump" aria-label="On this page">
         <a href="#types">Room types ({types.length})</a>
         <a href="#rooms">Rooms ({activeRooms})</a>
+        <a href="#photos">Photos ({photos.length})</a>
         <a href="#details">Hotel details</a>
       </nav>
 
@@ -37,7 +40,12 @@ export default async function HotelPage({ params }: { params: Promise<{ id: stri
         ) : (
           <div className="day-list">
             {types.map((t) => (
-              <RoomTypeCard key={t.id} type={t} roomCount={rooms.filter((r) => r.room_type_id === t.id && r.active).length} />
+              <RoomTypeCard
+                key={t.id}
+                type={t}
+                roomCount={rooms.filter((r) => r.room_type_id === t.id && r.active).length}
+                photos={photosOf(t.id)}
+              />
             ))}
           </div>
         )}
@@ -56,6 +64,13 @@ export default async function HotelPage({ params }: { params: Promise<{ id: stri
           </ul>
         )}
         <AddRoomsForm hotelId={hotel.id} types={types} />
+      </section>
+
+      <section id="photos" className="rsection">
+        <h2 className="list-h">Hotel photos</h2>
+        <div className="review-card">
+          <PhotoManager hotelId={hotel.id} photos={photosOf(null)} title="Building, entrance, reception…" hint="The first photo is the hotel's cover photo." />
+        </div>
       </section>
 
       <section id="details" className="rsection">
