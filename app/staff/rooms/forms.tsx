@@ -75,9 +75,17 @@ export function AddHotelForm() {
   );
 }
 
-export function HotelForm({ hotel }: { hotel: Hotel }) {
+export function HotelForm({ hotel, sample }: { hotel: Hotel; sample?: { name: string; price: number } }) {
   const [state, action, pending] = useActionState<FormState, FormData>(saveHotel, null);
   const [advType, setAdvType] = useState(hotel.advance_type);
+  const [advValue, setAdvValue] = useState(String(hotel.advance_value));
+  // Live example of what the guest pays, using the hotel's first room type (or a sample price)
+  const ex = sample ?? { name: 'A room', price: 1500 };
+  const nights = 12;
+  const total = ex.price * nights;
+  const v = Math.max(0, Number(advValue) || 0);
+  const advance =
+    advType === 'fixed' ? Math.min(v, total) : advType === 'percent' ? Math.round((total * Math.min(v, 100)) / 100) : Math.min(v, nights) * ex.price;
   return (
     <form onSubmit={keepFields(action)} className="rform">
       <input type="hidden" name="id" value={hotel.id} />
@@ -114,21 +122,52 @@ export function HotelForm({ hotel }: { hotel: Hotel }) {
         </Field>
       </div>
 
-      <h3 className="rsub">Advance and holding</h3>
+      <h3 className="rsub">Advance payment</h3>
+      <p className="hint">How much the guest pays to confirm the room.</p>
+      <input type="hidden" name="advance_type" value={advType} />
+      <div className="adv-opts" role="radiogroup" aria-label="Advance is">
+        {(
+          [
+            ['fixed', 'A fixed amount', 'The same for every booking, e.g. ₹1,000', '₹', ''],
+            ['percent', 'A percent of the total', 'e.g. 30% of the full stay', '', '%'],
+            ['nights', 'The price of one night', 'e.g. 1 night = the price of one night, whatever the stay length', '', 'night(s)'],
+          ] as const
+        ).map(([key, title, help, pre, post]) => (
+          <div key={key} className={`adv-opt ${advType === key ? 'on' : ''}`}>
+            <button type="button" role="radio" aria-checked={advType === key} className="adv-pick" onClick={() => setAdvType(key)}>
+              <span className="adv-rd" aria-hidden="true" />
+              <span>
+                <b>{title}</b>
+                <small>{help}</small>
+              </span>
+            </button>
+            {advType === key && (
+              <label className="adv-val">
+                {pre && <span>{pre}</span>}
+                <input
+                  name="advance_value"
+                  type="number"
+                  inputMode="numeric"
+                  min={key === 'nights' ? 1 : 0}
+                  max={key === 'percent' ? 100 : key === 'nights' ? 30 : 1000000}
+                  required
+                  value={advValue}
+                  onChange={(e) => setAdvValue(e.target.value)}
+                  aria-label={title}
+                />
+                {post && <span>{post}</span>}
+              </label>
+            )}
+          </div>
+        ))}
+      </div>
+      <p className="adv-ex">
+        Example: {ex.name} ₹{ex.price.toLocaleString('en-IN')}/night, {nights} nights → advance <b>₹{advance.toLocaleString('en-IN')}</b>, balance ₹
+        {(total - advance).toLocaleString('en-IN')} at check-in.
+      </p>
+
+      <h3 className="rsub">Holding and cancellation</h3>
       <div className="rgrid">
-        <Field label="Advance is">
-          <select name="advance_type" value={advType} onChange={(e) => setAdvType(e.target.value as Hotel['advance_type'])}>
-            <option value="fixed">A fixed amount (₹)</option>
-            <option value="percent">A percent of the total</option>
-            <option value="nights">The first few nights</option>
-          </select>
-        </Field>
-        <Field
-          label={advType === 'fixed' ? 'Amount (₹)' : advType === 'percent' ? 'Percent (%)' : 'Number of nights'}
-          hint={advType === 'fixed' ? 'For example 1000' : advType === 'percent' ? 'For example 30' : 'For example 1'}
-        >
-          <input name="advance_value" type="number" min={0} max={advType === 'percent' ? 100 : advType === 'nights' ? 30 : 1000000} required defaultValue={hotel.advance_value} />
-        </Field>
         <Field label="Hold an unpaid booking for (hours)" hint="After this, the room is freed again">
           <input name="hold_hours" type="number" min={1} max={168} required defaultValue={hotel.hold_hours} />
         </Field>

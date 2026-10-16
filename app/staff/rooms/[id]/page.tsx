@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { requireStaff, ROOM_SETTINGS_ROLES } from '@/lib/staff';
 import { getHotel } from '@/lib/rooms';
-import StaffShell from '@/components/staff/StaffShell';
+import RoomsShell from '@/components/staff/RoomsShell';
 import { AddRoomType, AddRoomsForm, HotelForm, RoomRow, RoomTypeCard } from '../forms';
 import PhotoManager from '../PhotoManager';
 
@@ -18,7 +18,7 @@ export default async function HotelPage({ params }: { params: Promise<{ id: stri
   const activeRooms = rooms.filter((r) => r.active).length;
 
   return (
-    <StaffShell staff={staff} active="rooms">
+    <RoomsShell staff={staff} active="settings" hotelId={hotel.id}>
       <p className="hint">
         <Link href="/staff/rooms/settings">← All hotels</Link>
       </p>
@@ -76,9 +76,9 @@ export default async function HotelPage({ params }: { params: Promise<{ id: stri
       <section id="details" className="rsection">
         <h2 className="list-h">Hotel details and rules</h2>
         <div className="review-card">
-          <HotelForm hotel={hotel} />
+          <HotelForm hotel={hotel} sample={types[0] ? { name: types[0].name, price: types[0].price_per_night } : undefined} />
         </div>
       </section>
-    </StaffShell>
+    </RoomsShell>
   );
 }

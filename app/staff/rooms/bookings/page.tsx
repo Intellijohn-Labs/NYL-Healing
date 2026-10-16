@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { requireStaff, ROOM_SETTINGS_ROLES } from '@/lib/staff';
-import { bookingsList, pickHotel, STATUS_LABEL, type BookingStatus } from '@/lib/roomBookings';
+import { bookingsList, pickHotelCard, STATUS_LABEL, type BookingStatus } from '@/lib/roomBookings';
 import { dayLabel, phone, rupees } from '@/lib/format';
-import StaffShell from '@/components/staff/StaffShell';
-import RoomsNav from '@/components/staff/RoomsNav';
+import RoomsShell from '@/components/staff/RoomsShell';
+import HotelCard from '@/components/staff/HotelCard';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,7 +25,8 @@ export default async function RoomBookingsPage({
 }) {
   const staff = await requireStaff(ROOM_SETTINGS_ROLES);
   const sp = await searchParams;
-  const { hotels, hotel } = await pickHotel(sp.hotel);
+  const { cards, hotel } = await pickHotelCard(sp.hotel);
+  const hotels = cards;
   const status = sp.status ?? 'active';
   const from = sp.from && /^\d{4}-\d{2}-\d{2}$/.test(sp.from) ? sp.from : '';
   const to = sp.to && /^\d{4}-\d{2}-\d{2}$/.test(sp.to) ? sp.to : '';
@@ -33,9 +34,8 @@ export default async function RoomBookingsPage({
   const rows = hotel ? await bookingsList(hotel.id, status, from || null, to || null, q) : [];
 
   return (
-    <StaffShell staff={staff} active="rooms">
-      <h1 className="step-title">Room bookings</h1>
-      <RoomsNav active="bookings" hotels={hotels} hotelId={hotel?.id} />
+    <RoomsShell staff={staff} active="bookings" hotelId={hotel?.id} multiHotel={cards.length > 1}>
+      {hotel && <HotelCard hotel={hotel} cards={cards} subtitle="Bookings" path="/staff/rooms/bookings" compact />}
       {!hotel ? (
         <p className="empty">No hotels yet.</p>
       ) : (
@@ -102,6 +102,6 @@ export default async function RoomBookingsPage({
           )}
         </>
       )}
-    </StaffShell>
+    </RoomsShell>
   );
 }

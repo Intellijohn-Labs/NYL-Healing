@@ -1,8 +1,8 @@
 'use client';
 
-import { useActionState, useMemo, useState } from 'react';
+import { useActionState, useEffect, useMemo, useState } from 'react';
 import { keepFields } from '@/lib/keepForm';
-import { createBooking, type BState } from '../actions';
+import { createBooking, stayAvailability, type BState } from '../actions';
 
 type T = {
   id: string;
@@ -26,6 +26,7 @@ const nightsBetween = (a: string, b: string) => (a && b ? Math.round((Date.parse
 export default function NewBookingForm({
   hotelName,
   types,
+  photos,
   rooms,
   rules,
   today,
@@ -33,6 +34,7 @@ export default function NewBookingForm({
 }: {
   hotelName: string;
   types: T[];
+  photos: Record<string, string[]>;
   rooms: { id: string; label: string; room_type_id: string }[];
   rules: Rules;
   today: string;
@@ -44,6 +46,22 @@ export default function NewBookingForm({
   const [checkOut, setCheckOut] = useState(addDays(initial.checkIn && initial.checkIn >= today ? initial.checkIn : today, 1));
   const [guests, setGuests] = useState(1);
   const t = types.find((x) => x.id === typeId)!;
+  const [free, setFree] = useState<Record<string, number> | null>(null);
+  const [viewer, setViewer] = useState<number | null>(null);
+  // Free rooms of each type for the chosen dates (checked again when the dates change)
+  useEffect(() => {
+    let live = true;
+    setFree(null);
+    if (!checkIn || !checkOut || checkOut <= checkIn) return;
+    const timer = setTimeout(() => {
+      stayAvailability(types.map((x) => x.id), checkIn, checkOut).then((r) => live && setFree(r));
+    }, 250);
+    return () => {
+      live = false;
+      clearTimeout(timer);
+    };
+  }, [checkIn, checkOut, types]);
+  const pics = photos[typeId] ?? [];
   const typeRooms = rooms.filter((r) => r.room_type_id === typeId);
 
   // Same price rules as the database (hotel_quote), so staff see the total before saving
@@ -65,18 +83,50 @@ export default function NewBookingForm({
   return (
     <form onSubmit={keepFields(action)} className="rform nb-form">
       <section className="review-card rform">
+        <h2 className="card-h">Room type</h2>
+        <input type="hidden" name="room_type_id" value={typeId} />
+        <div className="rtc-list" role="radiogroup" aria-label="Room type">
+          {types.map((x) => {
+            const n = free?.[x.id];
+            const cover = photos[x.id]?.[0];
+            return (
+              <button
+                key={x.id}
+                type="button"
+                role="radio"
+                aria-checked={x.id === typeId}
+                className={`rtc ${x.id === typeId ? 'on' : ''} ${n === 0 ? 'full' : ''}`}
+                onClick={() => setTypeId(x.id)}
+              >
+                <span className="rtc-img" style={cover ? { backgroundImage: `url("${cover}")` } : undefined}>
+                  {!cover && 'No photo'}
+                </span>
+                <span className="rtc-txt">
+                  <b>{x.name}</b>
+                  <small>Up to {x.max_guests} guests</small>
+                  <span className="rtc-price">
+                    {rupees(x.price_per_night)} <small>/ night</small>
+                  </span>
+                  <small className={`rtc-free ${n === 0 ? 'none' : ''}`}>
+                    {n == null ? 'Checking…' : n === 0 ? 'Not free for these dates' : `${n} free for these dates`}
+                  </small>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        {pics.length > 0 && (
+          <div className="rtc-gal">
+            {pics.slice(0, 5).map((u, i) => (
+              <button key={u} type="button" style={{ backgroundImage: `url("${u}")` }} onClick={() => setViewer(i)} aria-label={`Photo ${i + 1} of ${t.name}`} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="review-card rform">
         <h2 className="card-h">Stay at {hotelName}</h2>
         <div className="rgrid">
-          <label className="rf">
-            <span className="rf-l">Room type</span>
-            <select name="room_type_id" value={typeId} onChange={(e) => setTypeId(e.target.value)}>
-              {types.map((x) => (
-                <option key={x.id} value={x.id}>
-                  {x.name} (up to {x.max_guests})
-                </option>
-              ))}
-            </select>
-          </label>
           <label className="rf">
             <span className="rf-l">Room number</span>
             <select name="room_id" defaultValue={typeRooms.some((r) => r.id === initial.room) ? initial.room : ''} key={typeId}>
@@ -165,6 +215,34 @@ export default function NewBookingForm({
             </span>
           </label>
         </section>
+      )}
+
+      {viewer !== null && pics[viewer] && (
+        <div className="hb-viewer" role="dialog" aria-modal="true" aria-label={`Photos of ${t.name}`}>
+          <button type="button" className="btn small hb-close" onClick={() => setViewer(null)}>
+            Close
+          </button>
+          <div className="hb-viewer-photo">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={pics[viewer]} alt="" />
+          </div>
+          <div className="hb-viewer-info">
+            <div className="hb-viewer-text">
+              <div className="hb-name">{t.name}</div>
+              <div className="hb-meta">
+                Photo {viewer + 1} of {pics.length}
+              </div>
+            </div>
+            <div className="hb-viewer-nav">
+              <button type="button" className="btn small" onClick={() => setViewer(viewer - 1)} disabled={viewer === 0}>
+                Previous
+              </button>
+              <button type="button" className="btn small" onClick={() => setViewer(viewer + 1)} disabled={viewer >= pics.length - 1}>
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       <div className="slot-actions">

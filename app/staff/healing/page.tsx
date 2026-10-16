@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { HEALER_ROLES, requireStaff } from '@/lib/staff';
-import { logout } from '@/app/staff/actions';
+import UserMenu from '@/components/staff/UserMenu';
 import HealingBoard from './HealingBoard';
 
 export const dynamic = 'force-dynamic';
@@ -16,7 +16,6 @@ export default async function HealingPage() {
           <img src="/nyl-emblem.png" alt="" width={40} height={40} />
           <div>
             <p className="hb-title">NYL Photo Healing</p>
-            <p className="hb-who">{staff.name}</p>
           </div>
         </div>
         <div className="hb-top-actions">
@@ -25,13 +24,7 @@ export default async function HealingPage() {
               ← Staff app
             </Link>
           )}
-          <form action={logout}>
-            <button type="submit" className="icon-btn" aria-label="Sign out" title="Sign out">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l4-4-4-4M14 12H4" />
-              </svg>
-            </button>
-          </form>
+          <UserMenu name={staff.name} role={staff.role} />
         </div>
       </header>
       <HealingBoard />

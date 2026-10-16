@@ -1,5 +1,6 @@
 import 'server-only';
 import { db } from './supabase';
+import { roomPhotoUrl } from './rooms';
 
 async function rpc<T>(fn: string, args: Record<string, unknown>): Promise<T> {
   const { data, error } = await db().rpc(fn, args);
@@ -115,3 +116,60 @@ export const STATUS_LABEL: Record<BookingStatus, string> = {
   cancelled: 'Cancelled',
   expired: 'Expired (not paid)',
 };
+
+// ---------- Hotel cards and photos (for the Rooms screens) ----------
+
+export type HotelCard = {
+  id: string;
+  name: string;
+  address: string | null;
+  active: boolean;
+  cover: string | null;
+  photos: string[];
+  rooms: number;
+  waiting: number;
+};
+
+export async function hotelCards(): Promise<HotelCard[]> {
+  const [{ data: hotels }, { data: photos }, { data: rooms }, { data: holds }] = await Promise.all([
+    db().from('hotels').select('id, name, address, active').order('sort_order').order('name'),
+    db().from('room_photos').select('hotel_id, room_type_id, storage_path, sort_order, created_at').order('sort_order').order('created_at'),
+    db().from('hotel_rooms').select('hotel_id').eq('active', true),
+    db().from('hotel_bookings').select('hotel_id').eq('status', 'held'),
+  ]);
+  return (hotels ?? []).map((h) => {
+    const own = (photos ?? []).filter((p) => p.hotel_id === h.id);
+    // The hotel's own photos first; if it has none, use room photos
+    const hotelPics = own.filter((p) => !p.room_type_id).map((p) => roomPhotoUrl(p.storage_path));
+    const roomPics = own.filter((p) => p.room_type_id).map((p) => roomPhotoUrl(p.storage_path));
+    const all = [...hotelPics, ...roomPics];
+    return {
+      ...h,
+      cover: all[0] ?? null,
+      photos: all,
+      rooms: (rooms ?? []).filter((r) => r.hotel_id === h.id).length,
+      waiting: (holds ?? []).filter((b) => b.hotel_id === h.id).length,
+    } as HotelCard;
+  });
+}
+
+// The chosen hotel (?hotel=) or the first open one, with cards for the switcher
+export async function pickHotelCard(asked?: string) {
+  const cards = await hotelCards();
+  const hotel = cards.find((h) => h.id === asked) ?? cards.find((h) => h.active) ?? cards[0] ?? null;
+  return { cards, hotel };
+}
+
+// Photos of each room type of a hotel, cover first
+export async function typePhotos(hotelId: string): Promise<Record<string, string[]>> {
+  const { data } = await db()
+    .from('room_photos')
+    .select('room_type_id, storage_path')
+    .eq('hotel_id', hotelId)
+    .not('room_type_id', 'is', null)
+    .order('sort_order')
+    .order('created_at');
+  const out: Record<string, string[]> = {};
+  for (const p of data ?? []) (out[p.room_type_id as string] ??= []).push(roomPhotoUrl(p.storage_path));
+  return out;
+}

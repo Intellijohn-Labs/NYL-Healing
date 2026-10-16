@@ -1,10 +1,9 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { requireStaff, ROOM_SETTINGS_ROLES } from '@/lib/staff';
-import { bookingDetail, STATUS_LABEL } from '@/lib/roomBookings';
+import { bookingDetail, STATUS_LABEL, typePhotos } from '@/lib/roomBookings';
 import { dayLabel, phone, rupees, timeOf } from '@/lib/format';
-import StaffShell from '@/components/staff/StaffShell';
-import RoomsNav from '@/components/staff/RoomsNav';
+import RoomsShell from '@/components/staff/RoomsShell';
 import BookingActions from './BookingActions';
 
 export const dynamic = 'force-dynamic';
@@ -29,6 +28,7 @@ export default async function BookingPage({ params, searchParams }: { params: Pr
   const d = await bookingDetail(id);
   if (!d) notFound();
   const b = d.booking;
+  const cover = (await typePhotos(b.hotel_id))[b.room_type_id]?.[0] ?? null;
   const paid = b.advance_paid + b.balance_paid;
 
   const rows: [string, React.ReactNode][] = [
@@ -47,7 +47,7 @@ export default async function BookingPage({ params, searchParams }: { params: Pr
   ];
 
   return (
-    <StaffShell staff={staff} active="rooms">
+    <RoomsShell staff={staff} active="bookings" hotelId={b.hotel_id}>
       <p className="hint">
         <Link href="/staff/rooms/bookings">← All bookings</Link>
       </p>
@@ -55,7 +55,6 @@ export default async function BookingPage({ params, searchParams }: { params: Pr
         <h1 className="step-title">{b.guest_name}</h1>
         <p className="result-id">{b.booking_code}</p>
       </div>
-      <RoomsNav active="bookings" />
       {created && <p className="saved-note">Booking saved.</p>}
       <p className={`rb-status st-${b.status}`}>
         {STATUS_LABEL[b.status]}
@@ -63,6 +62,10 @@ export default async function BookingPage({ params, searchParams }: { params: Pr
       </p>
 
       <section className="review-card">
+        {cover && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={cover} alt={d.type_name} className="bk-cover" />
+        )}
         <dl>
           {rows.map(([k, v]) => (
             <div key={k} className="dl-row">
@@ -103,6 +106,6 @@ export default async function BookingPage({ params, searchParams }: { params: Pr
         </ol>
       </section>
       <p className="hint">Made {dayLabel(b.created_at.slice(0, 10), true)}, {timeOf(b.created_at)} · {b.source === 'staff' ? 'by staff' : `from ${b.source}`}</p>
-    </StaffShell>
+    </RoomsShell>
   );
 }

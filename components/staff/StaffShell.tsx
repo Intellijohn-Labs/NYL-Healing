@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { FRONT_DESK_ROLES, ROOM_SETTINGS_ROLES, type Staff } from '@/lib/staff';
-import { logout } from '@/app/staff/actions';
+import UserMenu from './UserMenu';
 
 const ICONS: Record<string, React.ReactNode> = {
   scan: (
@@ -83,15 +83,8 @@ export default function StaffShell({ staff, active, children }: { staff: Staff; 
         <img src="/nyl-emblem.png" alt="NYL Healing" width={40} height={40} />
         <div className="staff-title">
           <p>NYL Reception</p>
-          <span>{staff.name}</span>
         </div>
-        <form action={logout}>
-          <button type="submit" className="icon-btn" aria-label="Sign out" title="Sign out">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l4-4-4-4M14 12H4" />
-            </svg>
-          </button>
-        </form>
+        <UserMenu name={staff.name} role={staff.role} />
       </header>
 
       {children}

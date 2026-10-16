@@ -76,3 +76,19 @@ export async function bookingAction(_prev: BState, f: FormData): Promise<BState>
   };
   return { ok: true, message: done[action] ?? 'Saved.' };
 }
+
+// How many rooms of each type are free for every night of a stay (the lowest night counts)
+export async function stayAvailability(typeIds: string[], checkIn: string, checkOut: string): Promise<Record<string, number>> {
+  const staff = await staffWithRole(ROOM_SETTINGS_ROLES);
+  if (!staff || !/^\d{4}-\d{2}-\d{2}$/.test(checkIn) || !/^\d{4}-\d{2}-\d{2}$/.test(checkOut) || checkOut <= checkIn) return {};
+  const ids = typeIds.filter((t) => /^[0-9a-f-]{36}$/.test(t)).slice(0, 30);
+  const out: Record<string, number> = {};
+  await Promise.all(
+    ids.map(async (id) => {
+      const { data } = await db().rpc('hotel_type_free', { p_type: id, p_from: checkIn, p_to: checkOut, p_ignore: null });
+      const free = (data ?? []) as { free: number }[];
+      out[id] = free.length ? Math.max(0, Math.min(...free.map((f) => f.free))) : 0;
+    }),
+  );
+  return out;
+}

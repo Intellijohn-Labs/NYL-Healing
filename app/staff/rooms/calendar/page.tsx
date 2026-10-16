@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { requireStaff, ROOM_SETTINGS_ROLES } from '@/lib/staff';
-import { calendar, pickHotel, STATUS_LABEL } from '@/lib/roomBookings';
+import { calendar, pickHotelCard, STATUS_LABEL } from '@/lib/roomBookings';
 import { todayIST } from '@/lib/format';
-import StaffShell from '@/components/staff/StaffShell';
-import RoomsNav from '@/components/staff/RoomsNav';
+import RoomsShell from '@/components/staff/RoomsShell';
+import HotelCard from '@/components/staff/HotelCard';
 
 export const dynamic = 'force-dynamic';
 const DAYS = 14;
@@ -31,16 +31,16 @@ const initials = (name: string) =>
 export default async function RoomsCalendarPage({ searchParams }: { searchParams: Promise<{ hotel?: string; from?: string }> }) {
   const staff = await requireStaff(ROOM_SETTINGS_ROLES);
   const { hotel: asked, from: f } = await searchParams;
-  const { hotels, hotel } = await pickHotel(asked);
+  const { cards, hotel } = await pickHotelCard(asked);
+  const hotels = cards;
   const today = todayIST();
   const from = f && /^\d{4}-\d{2}-\d{2}$/.test(f) ? f : today;
   if (!hotel) {
     return (
-      <StaffShell staff={staff} active="rooms">
+      <RoomsShell staff={staff} active="calendar">
         <h1 className="step-title">Calendar</h1>
-        <RoomsNav active="calendar" />
         <p className="empty">No hotels yet.</p>
-      </StaffShell>
+      </RoomsShell>
     );
   }
   const c = await calendar(hotel.id, from, DAYS);
@@ -56,9 +56,8 @@ export default async function RoomsCalendarPage({ searchParams }: { searchParams
   };
 
   return (
-    <StaffShell staff={staff} active="rooms">
-      <h1 className="step-title">Calendar</h1>
-      <RoomsNav active="calendar" hotels={hotels} hotelId={hotel.id} />
+    <RoomsShell staff={staff} active="calendar" hotelId={hotel.id} multiHotel={cards.length > 1}>
+      <HotelCard hotel={hotel} cards={cards} subtitle="Calendar" path="/staff/rooms/calendar" compact />
 
       <div className="cal-nav">
         <Link className="btn small" href={`/staff/rooms/calendar?from=${addDays(from, -DAYS)}${hq}`}>
@@ -172,6 +171,6 @@ export default async function RoomsCalendarPage({ searchParams }: { searchParams
         </div>
       )}
       <p className="hint">Tap a booking to open it, or a free square to start a booking for that room and day.</p>
-    </StaffShell>
+    </RoomsShell>
   );
 }

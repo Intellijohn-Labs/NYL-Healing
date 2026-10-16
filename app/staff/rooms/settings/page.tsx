@@ -1,9 +1,8 @@
 import Link from 'next/link';
 import { requireStaff, ROOM_SETTINGS_ROLES } from '@/lib/staff';
 import { listHotels } from '@/lib/rooms';
-import StaffShell from '@/components/staff/StaffShell';
+import RoomsShell from '@/components/staff/RoomsShell';
 import { AddHotelForm } from '../forms';
-import RoomsNav from '@/components/staff/RoomsNav';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,9 +13,8 @@ export default async function RoomsSettingsPage() {
   const staff = await requireStaff(ROOM_SETTINGS_ROLES);
   const hotels = await listHotels();
   return (
-    <StaffShell staff={staff} active="rooms">
-      <h1 className="step-title">Rooms</h1>
-      <RoomsNav active="settings" />
+    <RoomsShell staff={staff} active="settings">
+      <h1 className="step-title">Settings</h1>
       <p className="hint page-intro">
         Hotels, room types, prices and rooms. Patients only see hotels and room types that are switched on.
       </p>
@@ -46,6 +44,6 @@ export default async function RoomsSettingsPage() {
           ))}
         </div>
       )}
-    </StaffShell>
+    </RoomsShell>
   );
 }

@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { requireStaff, ROOM_SETTINGS_ROLES } from '@/lib/staff';
-import { dashboard, pickHotel, type BookingRow } from '@/lib/roomBookings';
+import { dashboard, pickHotelCard, type BookingRow } from '@/lib/roomBookings';
 import { dayLabel, rupees, timeOf } from '@/lib/format';
-import StaffShell from '@/components/staff/StaffShell';
-import RoomsNav from '@/components/staff/RoomsNav';
+import RoomsShell from '@/components/staff/RoomsShell';
+import HotelCard from '@/components/staff/HotelCard';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,29 +48,24 @@ function List({ title, rows, empty, show }: { title: string; rows: BookingRow[];
 export default async function RoomsTodayPage({ searchParams }: { searchParams: Promise<{ hotel?: string }> }) {
   const staff = await requireStaff(ROOM_SETTINGS_ROLES);
   const { hotel: asked } = await searchParams;
-  const { hotels, hotel } = await pickHotel(asked);
+  const { cards, hotel } = await pickHotelCard(asked);
 
   if (!hotel) {
     return (
-      <StaffShell staff={staff} active="rooms">
+      <RoomsShell staff={staff} active="today">
         <h1 className="step-title">Rooms</h1>
-        <RoomsNav active="today" />
         <p className="empty">
           No hotels yet. Add one in <Link href="/staff/rooms/settings">Settings</Link>, with its room types and rooms.
         </p>
-      </StaffShell>
+      </RoomsShell>
     );
   }
   const d = await dashboard(hotel.id);
   const freeTonight = Math.max(0, d.rooms_total - d.booked_tonight - d.blocked_tonight);
 
   return (
-    <StaffShell staff={staff} active="rooms">
-      <h1 className="step-title">
-        {hotel.name}
-        <span className="rd-date">{dayLabel(d.today, true)}</span>
-      </h1>
-      <RoomsNav active="today" hotels={hotels} hotelId={hotel.id} />
+    <RoomsShell staff={staff} active="today" hotelId={hotel.id} multiHotel={cards.length > 1}>
+      <HotelCard hotel={hotel} cards={cards} subtitle={dayLabel(d.today, true)} path="/staff/rooms" />
 
       <div className="stats">
         <div className="stat">
@@ -121,6 +116,6 @@ export default async function RoomsTodayPage({ searchParams }: { searchParams: P
         show={(r) => (r.balance_due > 0 ? <em className="tag warn">{rupees(r.balance_due)} due</em> : <em className="tag ok">Paid</em>)}
       />
       <p className="hint">Updated {timeOf(new Date().toISOString())}. Unpaid holds are released automatically when their time runs out.</p>
-    </StaffShell>
+    </RoomsShell>
   );
 }
