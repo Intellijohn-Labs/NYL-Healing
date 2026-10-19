@@ -10,6 +10,8 @@ import SavePassButton from '@/components/SavePassButton';
 import { normalizePhone } from '@/lib/phone';
 import { register, type PatientInput, type RegisterResult } from './actions';
 import { DISEASES, diseaseLabel } from '@/lib/diseases';
+import { ID_MIN_AGE, ID_TYPES, idTypeLabel } from '@/lib/idDocs';
+import { uploadIdPhoto } from './idActions';
 
 type P = PatientInput;
 type PKey = keyof P;
@@ -30,6 +32,8 @@ const EMPTY: P = {
   diseases: [],
   diseasesOther: '',
   healthConcerns: '',
+  idType: '',
+  idPath: '',
   currentMedicines: '',
   otherNotes: '',
   consent: false,
@@ -50,6 +54,10 @@ function ageOf(dob: string) {
   if (tm < m || (tm === m && td < d)) a--;
   return a;
 }
+const needsId = (dob: string) => {
+  const a = ageOf(dob);
+  return a !== null && a >= ID_MIN_AGE;
+};
 const isMinor = (dob: string) => {
   const a = ageOf(dob);
   return a !== null && a < 18;
@@ -98,8 +106,25 @@ function validatePatient(p: P, i: number, t: Dict, today: string): Errors {
   }
   if (!p.diseases.length) e[k('diseases')] = t.diseasesError;
   else if (p.diseases.includes('other') && !p.diseasesOther.trim()) e[k('diseasesOther')] = t.required;
+  if (needsId(p.dob)) {
+    if (!p.idType) e[k('idType')] = t.required;
+    if (!p.idPath) e[k('idPath')] = t.idError;
+  }
   if (!p.consent) e[k('consent')] = t.consentError;
   return e;
+}
+
+// Shrink an ID photo in the browser before uploading: at most 1600 px on the long side, JPEG ~85%
+async function shrinkPhoto(file: File): Promise<Blob> {
+  const img = await createImageBitmap(file).catch(() => null);
+  if (!img) return file;
+  const scale = Math.min(1, 1600 / Math.max(img.width, img.height));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(img.width * scale);
+  canvas.height = Math.round(img.height * scale);
+  canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height);
+  const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, 'image/jpeg', 0.85));
+  return blob && blob.size < file.size ? blob : file;
 }
 
 export default function RegistrationForm({ token, lang, slots }: { token: string; lang: Lang; slots: Slot[] }) {
@@ -116,6 +141,8 @@ export default function RegistrationForm({ token, lang, slots }: { token: string
   const [fromReview, setFromReview] = useState(false);
   const [justSaved, setJustSaved] = useState<number | null>(null); // index of the patient just finished
   const [errors, setErrors] = useState<Errors>({});
+  const [idPreview, setIdPreview] = useState<Record<number, string>>({}); // local preview of each patient's ID photo
+  const [idBusy, setIdBusy] = useState<Record<number, 'busy' | 'fail' | undefined>>({});
   const [formError, setFormError] = useState('');
   const [done, setDone] = useState<Done | null>(null);
   const [pending, startTransition] = useTransition();
@@ -215,6 +242,7 @@ export default function RegistrationForm({ token, lang, slots }: { token: string
         SLOT_CLOSED: t.errSlotClosed,
         LINK_INVALID: t.errLink,
         GUARDIAN_REQUIRED: t.errGuardian,
+        ID_REQUIRED: t.idError,
         INVALID_INPUT: t.errGeneric,
         GENERIC: t.errGeneric,
       };
@@ -431,6 +459,27 @@ export default function RegistrationForm({ token, lang, slots }: { token: string
     );
   }
 
+  // Upload an ID photo as soon as it's chosen; the form keeps only the stored path
+  async function pickIdPhoto(i: number, file: File | undefined) {
+    if (!file) return;
+    setIdBusy((m) => ({ ...m, [i]: 'busy' }));
+    try {
+      const blob = await shrinkPhoto(file);
+      const fd = new FormData();
+      fd.append('photo', new File([blob], 'id.jpg', { type: blob.type || file.type }));
+      const r = await uploadIdPhoto(token, fd);
+      if (!r.ok) throw new Error('upload');
+      setIdPreview((m) => {
+        if (m[i]) URL.revokeObjectURL(m[i]);
+        return { ...m, [i]: URL.createObjectURL(blob) };
+      });
+      setP(i, 'idPath', r.path);
+      setIdBusy((m) => ({ ...m, [i]: undefined }));
+    } catch {
+      setIdBusy((m) => ({ ...m, [i]: 'fail' }));
+    }
+  }
+
   function patientStep(i: number) {
     const p = patients[i];
     const minor = isMinor(p.dob);
@@ -449,6 +498,48 @@ export default function RegistrationForm({ token, lang, slots }: { token: string
         {Radios({ i, field: 'gender', options: genderLabels, legend: t.gender })}
         {Text({ i, field: 'city', label: t.city, len: 120, autoComplete: 'address-level2' })}
         {Text({ i, field: 'designation', label: t.designation, optional: true, len: 80, autoComplete: 'organization-title' })}
+
+        {needsId(p.dob) && (
+          <div className="idcard">
+            <h2 className="section">{t.secId}</h2>
+            <p className="hint">{t.idHint}</p>
+            <div className="field">
+              <label htmlFor={`f-${i}-idType`}>{t.idType}</label>
+              <select id={`f-${i}-idType`} value={p.idType} onChange={(e) => setP(i, 'idType', e.target.value)} {...aria(`${i}.idType`)}>
+                <option value="">{t.idChoose}</option>
+                {ID_TYPES.map((x) => (
+                  <option key={x} value={x}>
+                    {idTypeLabel(x, lang)}
+                  </option>
+                ))}
+              </select>
+              {err(`${i}.idType`)}
+            </div>
+            {p.idType === 'aadhaar' && <p className="note">{t.idTip}</p>}
+            <div className="field" id={`f-${i}-idPath`} tabIndex={-1} aria-invalid={!!errors[`${i}.idPath`] || undefined}>
+              <p className="id-label">{t.idPhoto}</p>
+              {idPreview[i] && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={idPreview[i]} alt="" className="id-preview" />
+              )}
+              <label className={`btn id-btn ${idBusy[i] === 'busy' ? 'is-busy' : ''} ${p.idPath ? '' : 'primary'}`}>
+                {idBusy[i] === 'busy' ? t.idUploading : p.idPath ? t.idChange : t.idAdd}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+                  hidden
+                  disabled={idBusy[i] === 'busy'}
+                  onChange={(e) => {
+                    pickIdPhoto(i, e.target.files?.[0]);
+                    e.target.value = '';
+                  }}
+                />
+              </label>
+              {idBusy[i] === 'fail' && <p className="field-error">{t.idFailed}</p>}
+              {err(`${i}.idPath`)}
+            </div>
+          </div>
+        )}
 
         {minor && (
           <div className="guardian">
@@ -543,6 +634,7 @@ export default function RegistrationForm({ token, lang, slots }: { token: string
             [t.dob, `${p.dob ? formatDate(p.dob, lang) : ''}${age !== null ? ` (${fill(t.years, age)})` : ''}`],
             [t.gender, labelOf(genderLabels, p.gender)],
             [t.city, p.city],
+            ...(needsId(p.dob) && p.idType ? ([[t.idReview, `${idTypeLabel(p.idType, lang)} ✓`]] as [string, string][]) : []),
             ...(p.designation.trim() ? ([[t.designation, p.designation]] as [string, string][]) : []),
             ...(minor
               ? ([

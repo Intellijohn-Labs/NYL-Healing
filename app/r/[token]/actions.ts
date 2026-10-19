@@ -6,6 +6,7 @@ import { MAX_PATIENTS, ONLINE_PAYMENT_ENABLED, REGISTRATION_FEE } from '@/lib/co
 import { toPass, type RawPass } from '@/lib/pass';
 import { normalizePhone } from '@/lib/phone';
 import { isDisease } from '@/lib/diseases';
+import { ID_MIN_AGE, isIdType } from '@/lib/idDocs';
 import type { PassData } from '@/lib/types';
 
 export type PatientInput = {
@@ -23,6 +24,8 @@ export type PatientInput = {
   diseases: string[]; // codes from lib/diseases.ts, at least one
   diseasesOther: string; // needed when "other" is ticked
   healthConcerns: string; // optional now
+  idType: string; // required from 15 years (lib/idDocs.ts)
+  idPath: string; // the uploaded ID photo, pending/<token>/…
   currentMedicines: string;
   otherNotes: string;
   consent: boolean;
@@ -36,13 +39,20 @@ export type RegisterInput = {
   patients: PatientInput[];
 };
 
-export type RegisterError = 'SLOT_FULL' | 'SLOT_CLOSED' | 'LINK_INVALID' | 'GUARDIAN_REQUIRED' | 'INVALID_INPUT' | 'GENERIC';
+export type RegisterError = 'SLOT_FULL' | 'SLOT_CLOSED' | 'LINK_INVALID' | 'GUARDIAN_REQUIRED' | 'ID_REQUIRED' | 'INVALID_INPUT' | 'GENERIC';
 
 export type RegisterResult =
   | { ok: true; passes: PassData[]; payment: string; amountDue: number }
   | { ok: false; error: RegisterError };
 
-const KNOWN = ['SLOT_FULL', 'SLOT_CLOSED', 'LINK_INVALID', 'GUARDIAN_REQUIRED', 'INVALID_INPUT'] as const;
+const KNOWN = ['SLOT_FULL', 'SLOT_CLOSED', 'LINK_INVALID', 'GUARDIAN_REQUIRED', 'ID_REQUIRED', 'INVALID_INPUT'] as const;
+
+// Age in whole years today (India time); the ID card is required from 15
+function ageToday(dob: string) {
+  const [y, m, d] = dob.split('-').map(Number);
+  const [ty, tm, td] = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date()).split('-').map(Number);
+  return ty - y - (tm < m || (tm === m && td < d) ? 1 : 0);
+}
 
 const clip = (s: unknown, max: number) => (typeof s === 'string' ? s.trim().slice(0, max) : '');
 
@@ -77,6 +87,16 @@ export async function register(input: RegisterInput): Promise<RegisterResult> {
   ) {
     return { ok: false, error: 'INVALID_INPUT' };
   }
+  // Identity card for everyone aged 15+: a known type, and a photo uploaded through this same link
+  if (
+    list.some(
+      (p) =>
+        ageToday(clip(p.dob, 10)) >= ID_MIN_AGE &&
+        (!isIdType(p.idType) || !String(p.idPath ?? '').startsWith(`pending/${input.token}/`)),
+    )
+  ) {
+    return { ok: false, error: 'ID_REQUIRED' };
+  }
 
   const patients = list.map((p) => ({
     registering_for: p.registeringFor,
@@ -94,6 +114,8 @@ export async function register(input: RegisterInput): Promise<RegisterResult> {
     health_concerns: clip(p.healthConcerns, 4000),
     current_medicines: clip(p.currentMedicines, 2000),
     other_notes: clip(p.otherNotes, 2000),
+    id_type: ageToday(clip(p.dob, 10)) >= ID_MIN_AGE ? p.idType : '',
+    id_path: ageToday(clip(p.dob, 10)) >= ID_MIN_AGE ? clip(p.idPath, 200) : '',
   }));
 
   const { data, error } = await db().rpc('register_group', {

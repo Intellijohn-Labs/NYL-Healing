@@ -6,6 +6,8 @@ import { ageOf, dayLabel, FOR, GENDER, phone, relation, rupees, slotTime, timeOf
 import StaffShell from '@/components/staff/StaffShell';
 import MarkPaidButton from '@/components/staff/MarkPaidButton';
 import { diseaseLabel } from '@/lib/diseases';
+import { idCard } from '@/lib/idCard';
+import { idTypeLabel } from '@/lib/idDocs';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +15,7 @@ export default async function PatientPage({ params }: { params: Promise<{ code: 
   const staff = await requireStaff();
   const { code } = await params;
   const p = await patientDetail(decodeURIComponent(code));
+  const idc = p ? await idCard(p.patient_code) : null;
   if (!p) notFound();
   const age = ageOf(p.dob);
   // Health details are for reception and the owner, not gate staff
@@ -58,6 +61,26 @@ export default async function PatientPage({ params }: { params: Promise<{ code: 
           </a>
         </p>
       </section>
+
+      {idc && (idc.needs_id || idc.id_type) && (
+        <section className="review-card">
+          <h2 className="card-h">Identity card</h2>
+          <p className="idc-line">
+            {idc.id_type ? idTypeLabel(idc.id_type) : 'No ID uploaded'}
+            {idc.id_verified_at ? (
+              <em className="tag ok">Verified{idc.verified_by ? ` by ${idc.verified_by}` : ''}</em>
+            ) : idc.id_doc_path && !idc.id_deleted_at ? (
+              <em className="tag warn">Not verified yet</em>
+            ) : null}
+            {idc.id_deleted_at && <em className="tag">Photo deleted</em>}
+          </p>
+          {idc.id_doc_path && !idc.id_deleted_at && (
+            <p className="hint">
+              <Link href={`/staff/id/${idc.patient_code}`}>View ID photo and verify →</Link>
+            </p>
+          )}
+        </section>
+      )}
 
       {showHealth && p.health && (
         <section className="review-card">
