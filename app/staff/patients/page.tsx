@@ -58,6 +58,7 @@ export default async function PatientsPage({ searchParams }: { searchParams: Pro
                       .filter(Boolean)
                       .join(', ')}
                   </span>
+                  {r.missed && <span className="tag warn missed-tag">Missed day</span>}
                   {r.diseases.length > 0 && (
                     <span className="g-meta">{r.diseases.map((d) => diseaseLabel(d)).join(', ')}</span>
                   )}

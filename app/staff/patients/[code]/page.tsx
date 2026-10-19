@@ -8,6 +8,7 @@ import MarkPaidButton from '@/components/staff/MarkPaidButton';
 import { diseaseLabel } from '@/lib/diseases';
 import { idCard } from '@/lib/idCard';
 import { idTypeLabel } from '@/lib/idDocs';
+import { clearMissed } from '../missedActions';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,6 +46,21 @@ export default async function PatientPage({ params }: { params: Promise<{ code: 
         <h1 className="step-title">{p.full_name}</h1>
         <p className="result-id">{p.patient_code}</p>
       </div>
+
+      {(p.missed_open ?? 0) > 0 && (
+        <section className="missed-box" role="alert">
+          <p>
+            <b>Missed registered day.</b> This patient can&apos;t register again online until the NYL team allows it.
+          </p>
+          <form action={clearMissed} className="missed-form">
+            <input type="hidden" name="code" value={p.patient_code} />
+            <input name="note" maxLength={300} placeholder="Note (optional), e.g. called, was unwell" aria-label="Note" />
+            <button type="submit" className="btn primary small">
+              Allow to register again
+            </button>
+          </form>
+        </section>
+      )}
 
       <section className="review-card">
         <dl>
@@ -138,6 +154,16 @@ export default async function PatientPage({ params }: { params: Promise<{ code: 
                   {r.registering_for ? `Registered as: ${FOR[r.registering_for]}` : ''}
                   {(r.group_size ?? 1) > 1 ? `, with ${(r.group_size ?? 1) - 1} other${(r.group_size ?? 1) > 2 ? 's' : ''}` : ''}
                 </p>
+                {r.missed ? (
+                  <p className="g-meta">
+                    <span className="tag warn">Missed (not cleared)</span>
+                  </p>
+                ) : r.missed_cleared_at ? (
+                  <p className="g-meta">
+                    <span className="tag">Missed, cleared{r.missed_cleared_by ? ` by ${r.missed_cleared_by}` : ''}</span>
+                    {r.missed_note ? ` ${r.missed_note}` : ''}
+                  </p>
+                ) : null}
                 <p className="g-meta">
                   {r.payment_status === 'paid' ? (
                     <span className="tag ok">Paid {rupees(r.amount_due)}</span>

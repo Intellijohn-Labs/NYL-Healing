@@ -89,6 +89,7 @@ export type Dict = {
   phoneInvalid: string;
   optional: string;
   healthConcerns: string;
+  errMissed: string;
   secId: string;
   idHint: string;
   idType: string;
@@ -216,6 +217,7 @@ const en: Dict = {
   idError: 'Please add a photo of the ID card (front side).',
   idTip: 'For Aadhaar, please use a masked Aadhaar (only the last 4 digits are shown). Download it free from the mAadhaar app or myaadhaar.uidai.gov.in.',
   idReview: 'ID card',
+  errMissed: '{name} did not come on the registered day ({date}). To register {name} again, please contact the NYL team on +91 99471 23327, or visit the centre.',
   healthConcerns: 'Anything more about the health problems?',
   healthHint: 'You can write in any language.',
   medicines: 'Medicines you take now',
@@ -332,6 +334,7 @@ const ml: Dict = {
   idError: 'ഐഡി കാർഡിന്റെ ഫോട്ടോ (മുൻവശം) ചേർക്കുക.',
   idTip: 'ആധാർ ആണെങ്കിൽ, മാസ്ക് ചെയ്ത ആധാർ ഉപയോഗിക്കുക (അവസാന 4 അക്കങ്ങൾ മാത്രം കാണിക്കുന്നത്). mAadhaar ആപ്പിൽ നിന്നോ myaadhaar.uidai.gov.in-ൽ നിന്നോ സൗജന്യമായി ഡൗൺലോഡ് ചെയ്യാം.',
   idReview: 'ഐഡി കാർഡ്',
+  errMissed: 'രജിസ്റ്റർ ചെയ്ത ദിവസം ({date}) {name} വന്നിട്ടില്ല. {name}-നെ വീണ്ടും രജിസ്റ്റർ ചെയ്യാൻ NYL ടീമിനെ +91 99471 23327 എന്ന നമ്പറിൽ ബന്ധപ്പെടുക, അല്ലെങ്കിൽ സെന്ററിൽ നേരിട്ട് വരിക.',
   healthConcerns: 'ആരോഗ്യ പ്രശ്നങ്ങളെക്കുറിച്ച് കൂടുതൽ എന്തെങ്കിലും?',
   healthHint: 'ഏത് ഭാഷയിലും എഴുതാം.',
   medicines: 'ഇപ്പോൾ കഴിക്കുന്ന മരുന്നുകൾ',
@@ -447,6 +450,7 @@ const ta: Dict = {
   idError: 'அடையாள அட்டையின் புகைப்படத்தை (முன்பக்கம்) சேர்க்கவும்.',
   idTip: 'ஆதார் என்றால், மறைக்கப்பட்ட ஆதாரைப் பயன்படுத்தவும் (கடைசி 4 இலக்கங்கள் மட்டும் தெரியும்). mAadhaar செயலி அல்லது myaadhaar.uidai.gov.in இல் இலவசமாகப் பதிவிறக்கலாம்.',
   idReview: 'அடையாள அட்டை',
+  errMissed: 'பதிவு செய்த நாளில் ({date}) {name} வரவில்லை. {name} அவர்களை மீண்டும் பதிவு செய்ய NYL குழுவை +91 99471 23327 என்ற எண்ணில் தொடர்பு கொள்ளவும், அல்லது மையத்திற்கு நேரில் வரவும்.',
   healthConcerns: 'உடல்நலப் பிரச்சினைகள் பற்றி வேறு ஏதாவது?',
   healthHint: 'எந்த மொழியிலும் எழுதலாம்.',
   medicines: 'இப்போது எடுக்கும் மருந்துகள்',
@@ -560,6 +564,7 @@ const hi: Dict = {
   idError: 'कृपया आईडी कार्ड की फ़ोटो (सामने की तरफ़) जोड़ें।',
   idTip: 'आधार के लिए मास्क्ड आधार का उपयोग करें (केवल आख़िरी 4 अंक दिखते हैं)। इसे mAadhaar ऐप या myaadhaar.uidai.gov.in से मुफ़्त डाउनलोड करें।',
   idReview: 'पहचान पत्र',
+  errMissed: '{name} पंजीकृत दिन ({date}) पर नहीं आए। {name} को फिर से पंजीकृत करने के लिए NYL टीम से +91 99471 23327 पर संपर्क करें, या केंद्र पर आएँ।',
   healthConcerns: 'स्वास्थ्य समस्याओं के बारे में कुछ और?',
   healthHint: 'आप किसी भी भाषा में लिख सकते हैं।',
   medicines: 'अभी ली जा रही दवाएँ',
@@ -673,6 +678,7 @@ const kn: Dict = {
   idError: 'ಗುರುತಿನ ಚೀಟಿಯ ಫೋಟೋ (ಮುಂಭಾಗ) ಸೇರಿಸಿ.',
   idTip: 'ಆಧಾರ್ ಆದರೆ, ಮಾಸ್ಕ್ ಮಾಡಿದ ಆಧಾರ್ ಬಳಸಿ (ಕೊನೆಯ 4 ಅಂಕಿಗಳು ಮಾತ್ರ ಕಾಣುತ್ತವೆ). mAadhaar ಆ್ಯಪ್ ಅಥವಾ myaadhaar.uidai.gov.in ನಿಂದ ಉಚಿತವಾಗಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.',
   idReview: 'ಗುರುತಿನ ಚೀಟಿ',
+  errMissed: 'ನೋಂದಾಯಿಸಿದ ದಿನ ({date}) {name} ಬಂದಿರಲಿಲ್ಲ. {name} ಅವರನ್ನು ಮತ್ತೆ ನೋಂದಾಯಿಸಲು NYL ತಂಡವನ್ನು +91 99471 23327 ನಲ್ಲಿ ಸಂಪರ್ಕಿಸಿ, ಅಥವಾ ಕೇಂದ್ರಕ್ಕೆ ನೇರವಾಗಿ ಬನ್ನಿ.',
   healthConcerns: 'ಆರೋಗ್ಯ ಸಮಸ್ಯೆಗಳ ಬಗ್ಗೆ ಇನ್ನೇನಾದರೂ?',
   healthHint: 'ಯಾವುದೇ ಭಾಷೆಯಲ್ಲಿ ಬರೆಯಬಹುದು.',
   medicines: 'ಈಗ ತೆಗೆದುಕೊಳ್ಳುತ್ತಿರುವ ಔಷಧಿಗಳು',
@@ -786,6 +792,7 @@ const ar: Dict = {
   idError: 'يرجى إضافة صورة بطاقة الهوية (الوجه الأمامي).',
   idTip: 'لبطاقة آدهار الهندية، استخدم آدهار المخفي الرقم (تظهر آخر 4 أرقام فقط)، ويمكن تنزيله مجاناً من تطبيق mAadhaar أو موقع myaadhaar.uidai.gov.in.',
   idReview: 'بطاقة الهوية',
+  errMissed: 'لم يحضر {name} في يوم التسجيل ({date}). لتسجيل {name} مرة أخرى، يرجى التواصل مع فريق NYL على ‎+91 99471 23327، أو زيارة المركز.',
   healthConcerns: 'هل هناك شيء آخر عن المشكلات الصحية؟',
   healthHint: 'يمكنك الكتابة بأي لغة.',
   medicines: 'الأدوية التي تتناولها حالياً',

@@ -39,11 +39,19 @@ export type RegisterInput = {
   patients: PatientInput[];
 };
 
-export type RegisterError = 'SLOT_FULL' | 'SLOT_CLOSED' | 'LINK_INVALID' | 'GUARDIAN_REQUIRED' | 'ID_REQUIRED' | 'INVALID_INPUT' | 'GENERIC';
+export type RegisterError =
+  | 'SLOT_FULL'
+  | 'SLOT_CLOSED'
+  | 'LINK_INVALID'
+  | 'GUARDIAN_REQUIRED'
+  | 'ID_REQUIRED'
+  | 'MISSED_DAY'
+  | 'INVALID_INPUT'
+  | 'GENERIC';
 
 export type RegisterResult =
   | { ok: true; passes: PassData[]; payment: string; amountDue: number }
-  | { ok: false; error: RegisterError };
+  | { ok: false; error: RegisterError; missed?: { index: number; date: string } };
 
 const KNOWN = ['SLOT_FULL', 'SLOT_CLOSED', 'LINK_INVALID', 'GUARDIAN_REQUIRED', 'ID_REQUIRED', 'INVALID_INPUT'] as const;
 
@@ -118,7 +126,8 @@ export async function register(input: RegisterInput): Promise<RegisterResult> {
     id_path: ageToday(clip(p.dob, 10)) >= ID_MIN_AGE ? clip(p.idPath, 200) : '',
   }));
 
-  const { data, error } = await db().rpc('register_group', {
+  // register_group_checked refuses a patient who missed a registered day that the NYL team hasn't cleared (migration 013)
+  const { data, error } = await db().rpc('register_group_checked', {
     p_token: clip(input.token, 64),
     p_slot_id: input.slotId,
     p_payment_method: input.payment,
@@ -128,6 +137,8 @@ export async function register(input: RegisterInput): Promise<RegisterResult> {
   });
 
   if (error) {
+    const m = error.message?.match(/MISSED_DAY\|(\d+)\|(\d{4}-\d{2}-\d{2})/);
+    if (m) return { ok: false, error: 'MISSED_DAY', missed: { index: Number(m[1]) - 1, date: m[2] } };
     const code = KNOWN.find((k) => error.message?.includes(k));
     if (!code) console.error('register_group failed', error);
     return { ok: false, error: code ?? 'GENERIC' };
@@ -139,4 +150,16 @@ export async function register(input: RegisterInput): Promise<RegisterResult> {
     ),
   );
   return { ok: true, passes, payment: data.payment_method, amountDue: data.amount_due };
+}
+
+// Early check while filling in a patient: did this person (same number, name and date of birth) miss a registered day
+// that hasn't been cleared? Returns the date, or null.
+export async function checkMissedDay(token: string, name: string, dob: string): Promise<string | null> {
+  if (!/^[a-f0-9]{32,64}$/i.test(token) || !/^\d{4}-\d{2}-\d{2}$/.test(dob) || !name.trim()) return null;
+  const { data, error } = await db().rpc('check_missed_day', { p_token: token, p_name: clip(name, 120), p_dob: dob });
+  if (error) {
+    console.error('check_missed_day', error);
+    return null;
+  }
+  return (data as string | null) ?? null;
 }

@@ -7,7 +7,7 @@ export const ID_BUCKET = 'patient-ids';
 export const ID_MIN_AGE = 15;
 
 const L: Record<IdType, Record<Lang, string>> = {
-  aadhaar: { en: 'Aadhaar (masked)', ml: 'ആധാർ (മാസ്ക് ചെയ്തത്)', ta: 'ஆதார் (மறைக்கப்பட்டது)', hi: 'आधार (मास्क्ड)', kn: 'ಆಧಾರ್ (ಮಾಸ್ಕ್ ಮಾಡಿದ)', ar: 'آدهار (مخفي الرقم)' },
+  aadhaar: { en: 'Aadhaar', ml: 'ആധാർ', ta: 'ஆதார்', hi: 'आधार', kn: 'ಆಧಾರ್', ar: 'آدهار' },
   voter: { en: 'Voter ID', ml: 'വോട്ടർ ഐഡി', ta: 'வாக்காளர் அடையாள அட்டை', hi: 'वोटर आईडी', kn: 'ಮತದಾರರ ಗುರುತಿನ ಚೀಟಿ', ar: 'بطاقة الناخب' },
   passport: { en: 'Passport', ml: 'പാസ്പോർട്ട്', ta: 'பாஸ்போர்ட்', hi: 'पासपोर्ट', kn: 'ಪಾಸ್‌ಪೋರ್ಟ್', ar: 'جواز السفر' },
   driving: { en: 'Driving licence', ml: 'ഡ്രൈവിംഗ് ലൈസൻസ്', ta: 'ஓட்டுநர் உரிமம்', hi: 'ड्राइविंग लाइसेंस', kn: 'ಚಾಲನಾ ಪರವಾನಗಿ', ar: 'رخصة القيادة' },

@@ -66,6 +66,7 @@ export type SearchRow = {
   designation: string | null;
   diseases: string[];
   last_visit: string | null;
+  missed?: boolean;
 };
 
 export type PatientDetail = {
@@ -101,7 +102,12 @@ export type PatientDetail = {
     payment_status: string | null;
     amount_due: number | null;
     paid_at: string | null;
+    missed?: boolean;
+    missed_cleared_at?: string | null;
+    missed_cleared_by?: string | null;
+    missed_note?: string | null;
   }[];
+  missed_open?: number;
   visits: { visit_date: string; seat: string | null; checked_in_at: string }[];
 };
 

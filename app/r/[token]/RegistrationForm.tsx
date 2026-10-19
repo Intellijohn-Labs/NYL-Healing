@@ -8,7 +8,7 @@ import type { Slot } from '@/lib/types';
 import PatientPass from '@/components/PatientPass';
 import SavePassButton from '@/components/SavePassButton';
 import { normalizePhone } from '@/lib/phone';
-import { register, type PatientInput, type RegisterResult } from './actions';
+import { checkMissedDay, register, type PatientInput, type RegisterResult } from './actions';
 import { DISEASES, diseaseLabel } from '@/lib/diseases';
 import { ID_MIN_AGE, ID_TYPES, idTypeLabel } from '@/lib/idDocs';
 import { uploadIdPhoto } from './idActions';
@@ -192,10 +192,23 @@ export default function RegistrationForm({ token, lang, slots }: { token: string
     scrollTop();
   }
 
-  function next() {
+  // Message for a patient who missed their registered day (the NYL team must clear it first)
+  const missedMsg = (name: string, date: string) =>
+    fill(t.errMissed, '', { date: formatDay(date, lang, false) }).split('{name}').join(name.trim()); // the name can appear twice
+
+  async function next() {
     const e = validate(step);
     setErrors(e);
     if (Object.keys(e).length) return focusFirst(e);
+    // Early check on a patient's page: did this person miss a registered day that hasn't been cleared?
+    if (step >= 1 && step <= count) {
+      const p = patients[step - 1];
+      const missed = await checkMissedDay(token, p.fullName, p.dob).catch(() => null);
+      if (missed) {
+        setFormError(missedMsg(p.fullName, missed)); // shown just above the buttons
+        return;
+      }
+    }
     if (fromReview) {
       setFromReview(false);
       return go(REVIEW);
@@ -235,6 +248,11 @@ export default function RegistrationForm({ token, lang, slots }: { token: string
       if (res.ok) {
         setDone(res);
         scrollTop();
+        return;
+      }
+      if (res.error === 'MISSED_DAY' && res.missed) {
+        const who = patients[res.missed.index];
+        setFormError(missedMsg(who?.fullName ?? '', res.missed.date));
         return;
       }
       const msg: Record<string, string> = {
