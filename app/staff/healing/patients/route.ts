@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { db } from '@/lib/supabase';
 import { HEALER_ROLES, staffWithRole } from '@/lib/staff';
 import { LINK_SECONDS, PHOTO_BUCKET } from '@/lib/healing';
+import { isDisease } from '@/lib/diseases';
+import { diseasesInText } from '@/lib/diseaseWords';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,7 +12,11 @@ type BookingRow = {
   id: string;
   daily_index: number;
   status: string;
-  patients: { patient_code: string; full_name: string } | null;
+  patients: {
+    patient_code: string;
+    full_name: string;
+    patient_health: { diseases: string[] | null } | { diseases: string[] | null }[] | null;
+  } | null;
   photos: PhotoRow[] | null;
 };
 
@@ -23,7 +29,9 @@ export async function GET(req: NextRequest) {
   try {
     const { data, error } = await db()
       .from('distance_bookings')
-      .select('id, daily_index, status, patients(patient_code, full_name), photos(id, storage_path, status, checks, created_at, deleted_at)')
+      .select(
+        'id, daily_index, status, patients(patient_code, full_name, patient_health(diseases)), photos(id, storage_path, status, checks, created_at, deleted_at)',
+      )
       .eq('slot_id', slot)
       .neq('status', 'cancelled')
       .order('daily_index', { ascending: true });
@@ -36,9 +44,15 @@ export async function GET(req: NextRequest) {
         .sort((a, z) => String(z.created_at).localeCompare(String(a.created_at)))[0];
       const c = (photo?.checks ?? {}) as Record<string, unknown>;
       const ai = (c.ai_check ?? {}) as { status?: string; problems?: string[] };
+      // Diseases: ticked on the web form + chosen in WhatsApp + recognised in the typed illness
+      const ph = b.patients?.patient_health;
+      const ticked = (Array.isArray(ph) ? ph[0]?.diseases : ph?.diseases) ?? [];
+      const chosen = Array.isArray(c.diseases) ? (c.diseases as unknown[]) : [];
+      const diseases = [...new Set([...ticked, ...chosen].filter(isDisease).concat(diseasesInText(c.illness as string)))];
       return {
         id: b.id,
         number: b.daily_index,
+        diseases,
         code: b.patients?.patient_code ?? '',
         name: (c.name as string) || b.patients?.full_name || '',
         age: (c.age as number | null) ?? null,

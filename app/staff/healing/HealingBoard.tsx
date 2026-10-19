@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { DISEASES, diseaseLabel } from '@/lib/diseases';
 
 const TZ = 'Asia/Kolkata';
 const REFRESH_MS = 60 * 1000; // new bookings and fresh photo links every minute
@@ -14,6 +15,7 @@ type Patient = {
   age: number | null;
   illness: string;
   district: string;
+  diseases: string[];
   check: 'accepted_after_retries' | 'not_checked' | null;
   problems: string[];
   photo: string | null;
@@ -68,7 +70,8 @@ export default function HealingBoard() {
   const [loadingSlots, setLoadingSlots] = useState(true);
   const [loadingPatients, setLoadingPatients] = useState(false);
   const [error, setError] = useState('');
-  const [viewer, setViewer] = useState<number | null>(null); // index into patients
+  const [viewer, setViewer] = useState<number | null>(null); // index into the shown (filtered) list
+  const [picked, setPicked] = useState<string[]>([]); // disease filter ('none' = no disease given)
   const touch = useRef<number | null>(null);
 
   useEffect(() => {
@@ -134,9 +137,32 @@ export default function HealingBoard() {
     return () => clearInterval(t);
   }, [loadSlots, loadPatients]);
 
-  const pageCount = Math.max(1, Math.ceil(patients.length / perPage));
+  // Disease filter: a patient matches if they have ANY of the chosen diseases
+  const counts = useMemo(() => {
+    const c: Record<string, number> = {};
+    for (const p of patients) {
+      if (!p.diseases.length) c.none = (c.none ?? 0) + 1;
+      for (const d of p.diseases) c[d] = (c[d] ?? 0) + 1;
+    }
+    return c;
+  }, [patients]);
+  const list = useMemo(
+    () =>
+      picked.length
+        ? patients.filter((p) => (p.diseases.length ? p.diseases.some((d) => picked.includes(d)) : picked.includes('none')))
+        : patients,
+    [patients, picked],
+  );
+  const chips = [...DISEASES.filter((d) => counts[d] || picked.includes(d)), ...(counts.none || picked.includes('none') ? ['none'] : [])];
+  const togglePick = (d: string) => {
+    setPicked((p) => (p.includes(d) ? p.filter((x) => x !== d) : [...p, d]));
+    setPage(0);
+    setViewer(null);
+  };
+
+  const pageCount = Math.max(1, Math.ceil(list.length / perPage));
   const safePage = Math.min(page, pageCount - 1);
-  const shown = useMemo(() => patients.slice(safePage * perPage, safePage * perPage + perPage), [patients, safePage, perPage]);
+  const shown = useMemo(() => list.slice(safePage * perPage, safePage * perPage + perPage), [list, safePage, perPage]);
   const goPage = useCallback((n: number) => setPage(Math.max(0, Math.min(pageCount - 1, n))), [pageCount]);
 
   // Keyboard: arrows move pages (or photos when one is open), Esc closes the photo
@@ -146,7 +172,7 @@ export default function HealingBoard() {
       if (t && /INPUT|TEXTAREA|SELECT/.test(t.tagName)) return;
       if (viewer !== null) {
         if (e.key === 'Escape') setViewer(null);
-        if (e.key === 'ArrowRight') setViewer((v) => Math.min(patients.length - 1, (v ?? 0) + 1));
+        if (e.key === 'ArrowRight') setViewer((v) => Math.min(list.length - 1, (v ?? 0) + 1));
         if (e.key === 'ArrowLeft') setViewer((v) => Math.max(0, (v ?? 0) - 1));
         return;
       }
@@ -155,7 +181,7 @@ export default function HealingBoard() {
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [viewer, patients.length, safePage, goPage]);
+  }, [viewer, list.length, safePage, goPage]);
 
   useEffect(() => {
     document.body.style.overflow = viewer !== null ? 'hidden' : '';
@@ -176,9 +202,9 @@ export default function HealingBoard() {
   }
 
   const current = slots.find((s) => s.id === slotId);
-  const open = viewer !== null ? patients[viewer] : null;
-  const first = patients.length ? safePage * perPage + 1 : 0;
-  const last = Math.min(patients.length, (safePage + 1) * perPage);
+  const open = viewer !== null ? list[viewer] : null;
+  const first = list.length ? safePage * perPage + 1 : 0;
+  const last = Math.min(list.length, (safePage + 1) * perPage);
 
   return (
     <>
@@ -220,7 +246,23 @@ export default function HealingBoard() {
         <p className="hb-status">No patients booked for {timeLabel(current.start)} yet. New bookings appear here automatically.</p>
       )}
 
-      {patients.length > 0 && (
+      {patients.length > 0 && chips.length > 0 && (
+        <div className="hb-filter" role="group" aria-label="Filter by disease">
+          <button type="button" className={`hb-chip ${picked.length ? '' : 'on'}`} aria-pressed={!picked.length} onClick={() => { setPicked([]); setPage(0); setViewer(null); }}>
+            All <span>{patients.length}</span>
+          </button>
+          {chips.map((d) => (
+            <button key={d} type="button" className={`hb-chip ${picked.includes(d) ? 'on' : ''}`} aria-pressed={picked.includes(d)} onClick={() => togglePick(d)}>
+              {d === 'none' ? 'Not given' : diseaseLabel(d)} <span>{counts[d] ?? 0}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      {patients.length > 0 && picked.length > 0 && list.length === 0 && (
+        <p className="hb-status">No patients with {picked.map((d) => (d === 'none' ? 'no disease given' : diseaseLabel(d))).join(' or ')} in this session.</p>
+      )}
+
+      {list.length > 0 && (
         <>
           <ul className="hb-grid" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
             {shown.map((p, i) => (
@@ -255,7 +297,8 @@ export default function HealingBoard() {
               Previous
             </button>
             <span>
-              {first}–{last} of {patients.length}
+              {first}–{last} of {list.length}
+              {picked.length ? ` (filtered from ${patients.length})` : ''}
             </span>
             <button type="button" className="btn small" onClick={() => goPage(safePage + 1)} disabled={safePage >= pageCount - 1}>
               Next
@@ -283,13 +326,22 @@ export default function HealingBoard() {
               <div className="hb-name">{open.name}</div>
               <div className="hb-meta">{[metaLine(open), open.code].filter(Boolean).join(', ')}</div>
               {open.illness && <div className="hb-illness">{open.illness}</div>}
+              {open.diseases.length > 0 && (
+                <div className="hb-dtags">
+                  {open.diseases.map((d) => (
+                    <span key={d} className="tag">
+                      {diseaseLabel(d)}
+                    </span>
+                  ))}
+                </div>
+              )}
               {open.check && <div className="hb-flag-text">⚠ {checkNote(open)}</div>}
             </div>
             <div className="hb-viewer-nav">
               <button type="button" className="btn small" onClick={() => setViewer(viewer - 1)} disabled={viewer === 0}>
                 Previous
               </button>
-              <button type="button" className="btn small" onClick={() => setViewer(viewer + 1)} disabled={viewer >= patients.length - 1}>
+              <button type="button" className="btn small" onClick={() => setViewer(viewer + 1)} disabled={viewer >= list.length - 1}>
                 Next
               </button>
             </div>
