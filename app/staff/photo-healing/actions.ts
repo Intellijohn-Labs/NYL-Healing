@@ -269,7 +269,7 @@ function checkList(list: unknown, label: string): SlotDef[] | string {
 
 export async function saveDefaults(_prev: PhState, f: FormData): Promise<PhState> {
   const staff = await staffOrLogin();
-  let input: { slots?: unknown; sunday_slots?: unknown; cutoff_minutes?: unknown };
+  let input: { slots?: unknown; sunday_slots?: unknown; cutoff_minutes?: unknown; emergency_fee?: unknown; emergency_alert_numbers?: unknown };
   try {
     input = JSON.parse(String(f.get('payload') ?? '{}'));
   } catch {
@@ -281,6 +281,16 @@ export async function saveDefaults(_prev: PhState, f: FormData): Promise<PhState
   if (typeof sunday === 'string') return fail(sunday);
   const cutoff = Number(input.cutoff_minutes);
   if (!Number.isInteger(cutoff) || cutoff < 0 || cutoff > 180) return fail('Photos close: please enter 0 to 180 minutes.');
+  const efee = Number(input.emergency_fee ?? 0);
+  if (!Number.isInteger(efee) || efee < 0 || efee > 100000) return fail('Emergency fee: please enter an amount from 0 to 1,00,000.');
+  // WhatsApp numbers for the emergency alert: digits only, Indian 10-digit numbers get 91 in front
+  const alertNums = String(input.emergency_alert_numbers ?? '')
+    .split(/[\n,;]+/)
+    .map((x) => x.replace(/\D/g, ''))
+    .filter(Boolean)
+    .map((x) => (x.length === 10 ? '91' + x : x));
+  if (alertNums.some((x) => x.length < 11 || x.length > 15)) return fail('Emergency alert numbers: please enter full WhatsApp numbers, one per line.');
+  if (alertNums.length > 10) return fail('Emergency alert numbers: at most 10 numbers.');
 
   try {
     const { settings, raw } = await readSettings();
@@ -293,6 +303,8 @@ export async function saveDefaults(_prev: PhState, f: FormData): Promise<PhState
       capacity: settings.capacity,
       fee: settings.fee,
       days_ahead: settings.days_ahead,
+      emergency_fee: efee,
+      emergency_alert_numbers: [...new Set(alertNums)],
       slots,
       sunday_slots: sunday,
     };
@@ -301,8 +313,10 @@ export async function saveDefaults(_prev: PhState, f: FormData): Promise<PhState
       .upsert({ key: 'photo_healing', value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
     if (error) throw error;
     await log(staff, 'photo_healing_defaults_updated', {
-      old: raw ? { slots: raw.slots ?? null, sunday_slots: raw.sunday_slots ?? null, cutoff_minutes: raw.cutoff_minutes ?? null } : null,
-      new: { slots, sunday_slots: sunday, cutoff_minutes: cutoff },
+      old: raw
+        ? { slots: raw.slots ?? null, sunday_slots: raw.sunday_slots ?? null, cutoff_minutes: raw.cutoff_minutes ?? null, emergency_fee: raw.emergency_fee ?? null }
+        : null,
+      new: { slots, sunday_slots: sunday, cutoff_minutes: cutoff, emergency_fee: efee },
     });
     revalidatePath('/staff/photo-healing');
     return { ok: true, message: 'Default times saved.' };

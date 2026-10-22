@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { HEALER_ROLES, requireStaff } from '@/lib/staff';
 import UserMenu from '@/components/staff/UserMenu';
 import HealingBoard from './HealingBoard';
+import EmergencyBox from './EmergencyBox';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,6 +28,7 @@ export default async function HealingPage() {
           <UserMenu name={staff.name} role={staff.role} />
         </div>
       </header>
+      <EmergencyBox />
       <HealingBoard />
     </main>
   );

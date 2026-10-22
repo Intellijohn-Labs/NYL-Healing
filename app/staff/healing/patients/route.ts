@@ -12,6 +12,8 @@ type BookingRow = {
   id: string;
   daily_index: number;
   status: string;
+  is_emergency: boolean | null;
+  emergency_note: string | null;
   patients: {
     patient_code: string;
     full_name: string;
@@ -30,7 +32,7 @@ export async function GET(req: NextRequest) {
     const { data, error } = await db()
       .from('distance_bookings')
       .select(
-        'id, daily_index, status, patients(patient_code, full_name, patient_health(diseases)), photos(id, storage_path, status, checks, created_at, deleted_at)',
+        'id, daily_index, status, is_emergency, emergency_note, patients(patient_code, full_name, patient_health(diseases)), photos(id, storage_path, status, checks, created_at, deleted_at)',
       )
       .eq('slot_id', slot)
       .neq('status', 'cancelled')
@@ -52,6 +54,8 @@ export async function GET(req: NextRequest) {
       return {
         id: b.id,
         number: b.daily_index,
+        emergency: !!b.is_emergency,
+        emergencyNote: b.emergency_note ?? '',
         diseases,
         code: b.patients?.patient_code ?? '',
         name: (c.name as string) || b.patients?.full_name || '',
@@ -73,6 +77,8 @@ export async function GET(req: NextRequest) {
       for (const s of signed ?? []) if (s.signedUrl && s.path) links[s.path] = s.signedUrl;
     }
 
+    // Emergency patients first (critical condition), then in booking-number order
+    rows.sort((a, z) => Number(z.emergency) - Number(a.emergency) || a.number - z.number);
     return NextResponse.json({
       patients: rows.map(({ path, ...r }) => ({ ...r, photo: path ? (links[path] ?? null) : null })),
     });

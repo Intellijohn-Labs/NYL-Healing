@@ -15,6 +15,8 @@ type Patient = {
   age: number | null;
   illness: string;
   district: string;
+  emergency: boolean;
+  emergencyNote: string;
   diseases: string[];
   check: 'accepted_after_retries' | 'not_checked' | null;
   problems: string[];
@@ -141,6 +143,7 @@ export default function HealingBoard() {
   const counts = useMemo(() => {
     const c: Record<string, number> = {};
     for (const p of patients) {
+      if (p.emergency) c.emergency = (c.emergency ?? 0) + 1;
       if (!p.diseases.length) c.none = (c.none ?? 0) + 1;
       for (const d of p.diseases) c[d] = (c[d] ?? 0) + 1;
     }
@@ -149,7 +152,11 @@ export default function HealingBoard() {
   const list = useMemo(
     () =>
       picked.length
-        ? patients.filter((p) => (p.diseases.length ? p.diseases.some((d) => picked.includes(d)) : picked.includes('none')))
+        ? patients.filter(
+            (p) =>
+              (picked.includes('emergency') && p.emergency) ||
+              (p.diseases.length ? p.diseases.some((d) => picked.includes(d)) : picked.includes('none')),
+          )
         : patients,
     [patients, picked],
   );
@@ -251,6 +258,16 @@ export default function HealingBoard() {
           <button type="button" className={`hb-chip ${picked.length ? '' : 'on'}`} aria-pressed={!picked.length} onClick={() => { setPicked([]); setPage(0); setViewer(null); }}>
             All <span>{patients.length}</span>
           </button>
+          {(counts.emergency || picked.includes('emergency')) && (
+            <button
+              type="button"
+              className={`hb-chip emerg ${picked.includes('emergency') ? 'on' : ''}`}
+              aria-pressed={picked.includes('emergency')}
+              onClick={() => togglePick('emergency')}
+            >
+              🚨 Emergency <span>{counts.emergency ?? 0}</span>
+            </button>
+          )}
           {chips.map((d) => (
             <button key={d} type="button" className={`hb-chip ${picked.includes(d) ? 'on' : ''}`} aria-pressed={picked.includes(d)} onClick={() => togglePick(d)}>
               {d === 'none' ? 'Not given' : diseaseLabel(d)} <span>{counts[d] ?? 0}</span>
@@ -259,7 +276,10 @@ export default function HealingBoard() {
         </div>
       )}
       {patients.length > 0 && picked.length > 0 && list.length === 0 && (
-        <p className="hb-status">No patients with {picked.map((d) => (d === 'none' ? 'no disease given' : diseaseLabel(d))).join(' or ')} in this session.</p>
+        <p className="hb-status">
+          No patients with {picked.map((d) => (d === 'none' ? 'no disease given' : d === 'emergency' ? 'emergency' : diseaseLabel(d))).join(' or ')} in this
+          session.
+        </p>
       )}
 
       {list.length > 0 && (
@@ -267,7 +287,12 @@ export default function HealingBoard() {
           <ul className="hb-grid" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
             {shown.map((p, i) => (
               <li key={p.id}>
-                <button type="button" className="hb-card" onClick={() => setViewer(safePage * perPage + i)} aria-label={'Open photo of ' + p.name}>
+                <button
+                  type="button"
+                  className={`hb-card ${p.emergency ? 'emerg' : ''}`}
+                  onClick={() => setViewer(safePage * perPage + i)}
+                  aria-label={(p.emergency ? 'Emergency: ' : '') + 'Open photo of ' + p.name}
+                >
                   <div className="hb-photo">
                     {p.photo ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -276,6 +301,11 @@ export default function HealingBoard() {
                       <div className="hb-nophoto">No photo yet</div>
                     )}
                     <span className="hb-num">{p.number}</span>
+                    {p.emergency && (
+                      <span className="hb-emerg" title="Emergency" aria-label="Emergency">
+                        🚨
+                      </span>
+                    )}
                     {p.check && (
                       <span className="hb-flag" title={checkNote(p)}>
                         ⚠ Check photo
@@ -285,6 +315,7 @@ export default function HealingBoard() {
                   <div className="hb-info">
                     <div className="hb-name">{p.name}</div>
                     {metaLine(p) && <div className="hb-meta">{metaLine(p)}</div>}
+                    {p.emergency && p.emergencyNote && <div className="hb-enote">🚨 {p.emergencyNote}</div>}
                     {p.illness && <div className="hb-illness">{p.illness}</div>}
                   </div>
                 </button>
@@ -323,6 +354,7 @@ export default function HealingBoard() {
           <div className="hb-viewer-info">
             <span className="hb-num">{open.number}</span>
             <div className="hb-viewer-text">
+              {open.emergency && <div className="hb-flag-text emerg">🚨 Emergency{open.emergencyNote ? `: ${open.emergencyNote}` : ''}</div>}
               <div className="hb-name">{open.name}</div>
               <div className="hb-meta">{[metaLine(open), open.code].filter(Boolean).join(', ')}</div>
               {open.illness && <div className="hb-illness">{open.illness}</div>}

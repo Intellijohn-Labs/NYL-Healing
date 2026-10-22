@@ -254,17 +254,31 @@ function ListEditor({ title, hint, list, setList }: { title: string; hint: strin
   );
 }
 
-export function DefaultsEditor({ slots, sunday, cutoff }: { slots: Def[]; sunday: Def[]; cutoff: number }) {
+export function DefaultsEditor({
+  slots,
+  sunday,
+  cutoff,
+  emergencyFee = 0,
+  alertNumbers = [],
+}: {
+  slots: Def[];
+  sunday: Def[];
+  cutoff: number;
+  emergencyFee?: number;
+  alertNumbers?: string[];
+}) {
   const [a, setA] = useState<Def[]>(slots);
   const [b, setB] = useState<Def[]>(sunday);
   const [c, setC] = useState(String(cutoff));
+  const [ef, setEf] = useState(String(emergencyFee));
+  const [nums, setNums] = useState(alertNumbers.join('\n'));
   const [state, action, pending] = useActionState<PhState, FormData>(saveDefaults, null);
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
         const fd = new FormData();
-        fd.set('payload', JSON.stringify({ slots: a, sunday_slots: b, cutoff_minutes: Number(c) }));
+        fd.set('payload', JSON.stringify({ slots: a, sunday_slots: b, cutoff_minutes: Number(c), emergency_fee: Number(ef || 0), emergency_alert_numbers: nums }));
         startTransition(() => action(fd));
       }}
       className="ph-defaults"
@@ -283,6 +297,22 @@ export function DefaultsEditor({ slots, sunday, cutoff }: { slots: Def[]; sunday
           <input type="number" min={0} max={180} value={c} onChange={(e) => setC(e.target.value)} required />
         </label>
         <p className="hint">Each session lasts 1 hour. Patients can send photos until this many minutes before it starts.</p>
+      </section>
+      <section className="review-card ph-def">
+        <h2 className="card-h">🚨 Emergency photo healing</h2>
+        <label className="rf ph-cutoff">
+          <span className="rf-l">Extra fee (₹)</span>
+          <input type="number" min={0} max={100000} step={1} value={ef} onChange={(e) => setEf(e.target.value)} required />
+        </label>
+        <p className="hint">Shown to patients who choose Emergency in WhatsApp (critical condition). 0 means no fee is shown.</p>
+        <label className="rf">
+          <span className="rf-l">WhatsApp numbers to alert (one per line)</span>
+          <textarea rows={3} value={nums} onChange={(e) => setNums(e.target.value)} placeholder={'98765 43210\n91234 56789'} />
+        </label>
+        <p className="hint">
+          Emergency healing starts within 5 minutes, at any time of day. The healer screen shows it at the top with an alarm; these numbers will also get a
+          WhatsApp alert once the WhatsApp template is approved.
+        </p>
       </section>
       <p className="ph-note">
         Days that already have their own time (shown as &quot;Changed for this day&quot;, or created when the first photo came in) keep that time. Change them in

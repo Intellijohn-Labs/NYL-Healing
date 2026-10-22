@@ -12,6 +12,8 @@ export type PhotoHealingSettings = {
   capacity: number;
   fee: number;
   days_ahead: number;
+  emergency_fee: number; // extra fee for emergency photo healing (0 = not shown)
+  emergency_alert_numbers: string[]; // WhatsApp numbers alerted for each emergency
   slots: SlotDef[]; // Monday to Saturday
   sunday_slots: SlotDef[];
   [other: string]: unknown; // any other keys already in the row are kept as they are
@@ -28,6 +30,8 @@ export const DEFAULTS: PhotoHealingSettings = {
   capacity: 100000,
   fee: 0,
   days_ahead: 7,
+  emergency_fee: 0,
+  emergency_alert_numbers: [],
   slots: [
     { no: 1, time: '06:30' },
     { no: 2, time: '14:30' },
@@ -64,6 +68,8 @@ export async function readSettings(): Promise<{ settings: PhotoHealingSettings; 
       capacity: num('capacity', DEFAULTS.capacity),
       fee: num('fee', DEFAULTS.fee),
       days_ahead: num('days_ahead', DEFAULTS.days_ahead),
+      emergency_fee: num('emergency_fee', DEFAULTS.emergency_fee),
+      emergency_alert_numbers: Array.isArray(v.emergency_alert_numbers) ? (v.emergency_alert_numbers as unknown[]).map(String) : [],
       slots: cleanSlots(v.slots) ?? DEFAULTS.slots,
       sunday_slots: cleanSlots(v.sunday_slots) ?? DEFAULTS.sunday_slots,
     },

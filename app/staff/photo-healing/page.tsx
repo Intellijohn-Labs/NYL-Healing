@@ -45,7 +45,7 @@ export default async function PhotoHealingPage({ searchParams }: { searchParams:
       )}
 
       {showDefaults ? (
-        <DefaultsEditor slots={settings.slots} sunday={settings.sunday_slots} cutoff={settings.cutoff_minutes} />
+        <DefaultsEditor slots={settings.slots} sunday={settings.sunday_slots} cutoff={settings.cutoff_minutes} emergencyFee={settings.emergency_fee} alertNumbers={settings.emergency_alert_numbers} />
       ) : (
         <div className="ph-days">
           {plan.map((d) => {
