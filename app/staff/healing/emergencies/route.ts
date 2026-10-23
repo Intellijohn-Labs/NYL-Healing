@@ -71,5 +71,17 @@ export async function POST(req: NextRequest) {
     console.error('staff_emergency_action', error);
     return NextResponse.json({ error: "Couldn't save. Please try again." }, { status: 500 });
   }
+  // Tell the patient on WhatsApp ("healing has started" / "healing is complete"). The n8n workflow
+  // "NYL - Emergency Patient Update" sends each message only once. A failure here never blocks the healer.
+  try {
+    await fetch(process.env.EMERGENCY_UPDATE_HOOK_URL || 'https://n8n.srv1691210.hstgr.cloud/webhook/nyl-emergency-update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, action }),
+      signal: AbortSignal.timeout(4000),
+    });
+  } catch (err) {
+    console.error('emergency patient update', err);
+  }
   return NextResponse.json({ ok: true });
 }
