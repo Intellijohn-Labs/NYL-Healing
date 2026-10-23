@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { requireStaff } from '@/lib/staff';
 import { todaySummary } from '@/lib/staffData';
+import { collections, summarise } from '@/lib/collections';
 import { dayLabel, rupees, timeOf } from '@/lib/format';
 import StaffShell from '@/components/staff/StaffShell';
 
@@ -9,6 +10,7 @@ export const dynamic = 'force-dynamic';
 export default async function TodayPage() {
   const staff = await requireStaff();
   const t = await todaySummary(staff.centre_id ?? 1);
+  const paid = summarise(await collections(t.date, t.date));
   const seatsFree = t.seats_total > 0 ? t.seats_total - t.with_seat : null;
 
   return (
@@ -33,6 +35,20 @@ export default async function TodayPage() {
           <p className="stat-l">Fees still to collect</p>
         </div>
       </div>
+
+      <section className="review-card col-today">
+        <div className="col-today-hd">
+          <h2 className="card-h">Collected today</h2>
+          <b>{rupees(paid.total)}</b>
+        </div>
+        <p className="hint">
+          {paid.count} payment{paid.count === 1 ? '' : 's'} marked paid at reception
+          {paid.byStaff.length > 0 && ': ' + paid.byStaff.map((x) => `${x.name} ${rupees(x.amount)}`).join(' · ')}
+        </p>
+        <p className="hint">
+          <Link href="/staff/collections">See all collections and download →</Link>
+        </p>
+      </section>
 
       {t.registrations > 0 && (
         <p className="hint">
