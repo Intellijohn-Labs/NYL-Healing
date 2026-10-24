@@ -149,6 +149,18 @@ export async function register(input: RegisterInput): Promise<RegisterResult> {
       toPass(raw, { slot_date: data.slot_date, starts_at: data.starts_at, issued_at: data.issued_at }),
     ),
   );
+  // Send the WhatsApp acknowledgement with each person's patient pass (n8n "NYL - Registration Confirmation").
+  // It never blocks or fails the registration.
+  try {
+    await fetch(process.env.REGISTRATION_DONE_HOOK_URL || 'https://n8n.srv1691210.hstgr.cloud/webhook/nyl-registration-done', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: input.token }),
+      signal: AbortSignal.timeout(4000),
+    });
+  } catch (err) {
+    console.error('registration whatsapp ack', err);
+  }
   return { ok: true, passes, payment: data.payment_method, amountDue: data.amount_due };
 }
 
