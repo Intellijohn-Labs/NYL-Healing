@@ -4607,3 +4607,26 @@ fieldset[aria-invalid='true'] .dis-opt {
   background: var(--pill);
   color: var(--pill-ink) !important;
 }
+
+/* "Back to WhatsApp chat" button (pass page and registration done) */
+.pass-wa {
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0;
+}
+.btn.wa-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 24rem;
+  background: #25d366;
+  border-color: #25d366;
+  color: #08331a !important;
+  font-weight: 800;
+  text-decoration: none;
+}
+.btn.wa-back:hover {
+  background: #1fbe5a;
+}

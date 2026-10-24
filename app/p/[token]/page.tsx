@@ -3,6 +3,7 @@ import { getPassRaw } from '@/lib/data';
 import { toPass, type RawPass } from '@/lib/pass';
 import PatientPass from '@/components/PatientPass';
 import SavePassButton from '@/components/SavePassButton';
+import BackToWhatsApp from '@/components/BackToWhatsApp';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,6 +41,9 @@ export default async function PassPage({ params }: { params: Promise<{ token: st
         <SavePassButton pass={pass} label="Save pass" busyLabel="Saving…" />
       </div>
       <p className="hint pass-hint">Bring this pass every day you come. Reception will scan the QR code to mark your attendance.</p>
+      <div className="pass-wa">
+        <BackToWhatsApp lang={pass.language} />
+      </div>
     </main>
   );
 }

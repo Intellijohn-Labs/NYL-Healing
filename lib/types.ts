@@ -13,6 +13,8 @@ export type PassData = {
   age: number | null;
   gender: string; // male | female | other
   city: string;
+  designation?: string | null; // optional, shown under the name
+  language?: string | null; // the patient's language (for the WhatsApp button)
   registeringFor: string | null; // self | child | parent | spouse | other
   guardianName: string | null;
   guardianRelation: string | null; // father | mother | "other: ..."

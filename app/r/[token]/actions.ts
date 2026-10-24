@@ -144,9 +144,13 @@ export async function register(input: RegisterInput): Promise<RegisterResult> {
     return { ok: false, error: code ?? 'GENERIC' };
   }
 
+  // Passes come back in the same order as the patients were sent, so the designation is matched by position
   const passes = await Promise.all(
-    (data.patients as RawPass[]).map((raw) =>
-      toPass(raw, { slot_date: data.slot_date, starts_at: data.starts_at, issued_at: data.issued_at }),
+    (data.patients as RawPass[]).map((raw, i) =>
+      toPass(
+        { ...raw, designation: raw.designation ?? (clip(list[i]?.designation ?? '', 80) || null), language: raw.language ?? input.language },
+        { slot_date: data.slot_date, starts_at: data.starts_at, issued_at: data.issued_at },
+      ),
     ),
   );
   // Send the WhatsApp acknowledgement with each person's patient pass (n8n "NYL - Registration Confirmation").

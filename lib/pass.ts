@@ -10,6 +10,8 @@ export type RawPass = {
   dob: string | null;
   gender: string | null;
   city: string | null;
+  designation?: string | null;
+  language?: string | null;
   registering_for: string | null;
   guardian_name: string | null;
   guardian_relation: string | null;
@@ -48,6 +50,8 @@ export async function toPass(raw: RawPass, extra: { slot_date?: string; starts_a
     age: ageFrom(raw.dob),
     gender: raw.gender ?? '',
     city: raw.city ?? '',
+    designation: raw.designation ?? null,
+    language: raw.language ?? null,
     registeringFor: raw.registering_for,
     guardianName: raw.guardian_name,
     guardianRelation: raw.guardian_relation,

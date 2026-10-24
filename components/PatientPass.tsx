@@ -205,6 +205,12 @@ export default function PatientPass({ pass, id }: { pass: PassData; id?: string 
               <p className="pp-lbl">Town</p>
               <p className="pp-v">{pass.city}</p>
             </div>
+            {pass.designation && (
+              <div className="pp-chip">
+                <p className="pp-lbl">Designation</p>
+                <p className="pp-v">{pass.designation}</p>
+              </div>
+            )}
             {pass.guardianName && (
               <div className="pp-chip wide">
                 <p className="pp-lbl">Parent / guardian</p>

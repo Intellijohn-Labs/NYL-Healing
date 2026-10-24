@@ -7,6 +7,7 @@ import { MAX_PATIENTS, ONLINE_PAYMENT_ENABLED, REGISTRATION_FEE } from '@/lib/co
 import type { Slot } from '@/lib/types';
 import PatientPass from '@/components/PatientPass';
 import SavePassButton from '@/components/SavePassButton';
+import BackToWhatsApp from '@/components/BackToWhatsApp';
 import { normalizePhone } from '@/lib/phone';
 import { checkMissedDay, register, type PatientInput, type RegisterResult } from './actions';
 import { DISEASES, diseaseLabel } from '@/lib/diseases';
@@ -344,6 +345,9 @@ export default function RegistrationForm({ token, lang, slots }: { token: string
               </div>
             ))}
           </div>
+          <div className="pass-wa">
+            <BackToWhatsApp lang={lang} />
+          </div>
           <button type="button" className="btn secondary more" onClick={registerMore}>
             {t.registerMore}
           </button>
@@ -533,7 +537,6 @@ export default function RegistrationForm({ token, lang, slots }: { token: string
               </select>
               {err(`${i}.idType`)}
             </div>
-            {p.idType === 'aadhaar' && <p className="note">{t.idTip}</p>}
             <div className="field" id={`f-${i}-idPath`} tabIndex={-1} aria-invalid={!!errors[`${i}.idPath`] || undefined}>
               <p className="id-label">{t.idPhoto}</p>
               {idPreview[i] && (
