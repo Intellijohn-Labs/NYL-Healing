@@ -523,8 +523,6 @@ export default function RegistrationForm({ token, lang, slots }: { token: string
 
         {needsId(p.dob) && (
           <div className="idcard">
-            <h2 className="section">{t.secId}</h2>
-            <p className="hint">{t.idHint}</p>
             <div className="field">
               <label htmlFor={`f-${i}-idType`}>{t.idType}</label>
               <select id={`f-${i}-idType`} value={p.idType} onChange={(e) => setP(i, 'idType', e.target.value)} {...aria(`${i}.idType`)}>
