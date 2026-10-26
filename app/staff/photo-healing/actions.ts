@@ -269,7 +269,16 @@ function checkList(list: unknown, label: string): SlotDef[] | string {
 
 export async function saveDefaults(_prev: PhState, f: FormData): Promise<PhState> {
   const staff = await staffOrLogin();
-  let input: { slots?: unknown; sunday_slots?: unknown; cutoff_minutes?: unknown; emergency_fee?: unknown; emergency_alert_numbers?: unknown };
+  let input: {
+    slots?: unknown;
+    sunday_slots?: unknown;
+    cutoff_minutes?: unknown;
+    emergency_fee?: unknown;
+    emergency_alert_numbers?: unknown;
+    fee?: unknown;
+    upi_id?: unknown;
+    upi_name?: unknown;
+  };
   try {
     input = JSON.parse(String(f.get('payload') ?? '{}'));
   } catch {
@@ -291,6 +300,11 @@ export async function saveDefaults(_prev: PhState, f: FormData): Promise<PhState
     .map((x) => (x.length === 10 ? '91' + x : x));
   if (alertNums.some((x) => x.length < 11 || x.length > 15)) return fail('Emergency alert numbers: please enter full WhatsApp numbers, one per line.');
   if (alertNums.length > 10) return fail('Emergency alert numbers: at most 10 numbers.');
+  const fee = Number(input.fee ?? 0);
+  if (!Number.isInteger(fee) || fee < 0 || fee > 100000) return fail('Photo healing fee: please enter an amount from 0 to 1,00,000.');
+  const upiId = String(input.upi_id ?? '').trim();
+  if (upiId && !/^[\w.-]{2,}@[\w.-]{2,}$/.test(upiId)) return fail('UPI ID: please enter it like nylhealing@okaxis.');
+  const upiName = String(input.upi_name ?? '').trim().slice(0, 50) || 'NYL Healing';
 
   try {
     const { settings, raw } = await readSettings();
@@ -301,10 +315,12 @@ export async function saveDefaults(_prev: PhState, f: FormData): Promise<PhState
       cutoff_minutes: cutoff,
       duration_minutes: settings.duration_minutes,
       capacity: settings.capacity,
-      fee: settings.fee,
       days_ahead: settings.days_ahead,
       emergency_fee: efee,
       emergency_alert_numbers: [...new Set(alertNums)],
+      fee,
+      upi_id: upiId,
+      upi_name: upiName,
       slots,
       sunday_slots: sunday,
     };

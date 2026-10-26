@@ -20,6 +20,9 @@ export default async function PhotoHealingPage({ searchParams }: { searchParams:
   return (
     <StaffShell staff={staff} active="photo">
       <h1 className="step-title">Photo Healing</h1>
+      <p className="hint">
+        <Link href="/staff/payments">💳 Payments to verify →</Link>
+      </p>
       <p className="hint page-intro">
         Session times for distance healing, in India time. The WhatsApp bot uses these times when patients book.
       </p>
@@ -45,7 +48,11 @@ export default async function PhotoHealingPage({ searchParams }: { searchParams:
       )}
 
       {showDefaults ? (
-        <DefaultsEditor slots={settings.slots} sunday={settings.sunday_slots} cutoff={settings.cutoff_minutes} emergencyFee={settings.emergency_fee} alertNumbers={settings.emergency_alert_numbers} />
+        <DefaultsEditor slots={settings.slots} sunday={settings.sunday_slots} cutoff={settings.cutoff_minutes} emergencyFee={settings.emergency_fee} alertNumbers={settings.emergency_alert_numbers}
+          fee={settings.fee}
+          upiId={settings.upi_id}
+          upiName={settings.upi_name}
+        />
       ) : (
         <div className="ph-days">
           {plan.map((d) => {

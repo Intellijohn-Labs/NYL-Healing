@@ -14,6 +14,8 @@ export type PhotoHealingSettings = {
   days_ahead: number;
   emergency_fee: number; // extra fee for emergency photo healing (0 = not shown)
   emergency_alert_numbers: string[]; // WhatsApp numbers alerted for each emergency
+  upi_id: string; // NYL's UPI ID for the payment QR (empty = no payment asked)
+  upi_name: string; // name shown to the payer
   slots: SlotDef[]; // Monday to Saturday
   sunday_slots: SlotDef[];
   [other: string]: unknown; // any other keys already in the row are kept as they are
@@ -32,6 +34,8 @@ export const DEFAULTS: PhotoHealingSettings = {
   days_ahead: 7,
   emergency_fee: 0,
   emergency_alert_numbers: [],
+  upi_id: '',
+  upi_name: 'NYL Healing',
   slots: [
     { no: 1, time: '06:30' },
     { no: 2, time: '14:30' },
@@ -70,6 +74,8 @@ export async function readSettings(): Promise<{ settings: PhotoHealingSettings; 
       days_ahead: num('days_ahead', DEFAULTS.days_ahead),
       emergency_fee: num('emergency_fee', DEFAULTS.emergency_fee),
       emergency_alert_numbers: Array.isArray(v.emergency_alert_numbers) ? (v.emergency_alert_numbers as unknown[]).map(String) : [],
+      upi_id: typeof v.upi_id === 'string' ? v.upi_id : '',
+      upi_name: typeof v.upi_name === 'string' && v.upi_name ? v.upi_name : 'NYL Healing',
       slots: cleanSlots(v.slots) ?? DEFAULTS.slots,
       sunday_slots: cleanSlots(v.sunday_slots) ?? DEFAULTS.sunday_slots,
     },

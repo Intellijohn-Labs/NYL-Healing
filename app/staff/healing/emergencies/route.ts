@@ -10,6 +10,7 @@ type Row = {
   note: string | null;
   status: 'waiting' | 'started';
   created_at: string;
+  released_at: string | null;
   started_at: string | null;
   patients: { patient_code: string; full_name: string } | null;
   photos: { storage_path: string; status: string; checks: Record<string, unknown> | null; created_at: string; deleted_at: string | null }[] | null;
@@ -22,7 +23,7 @@ export async function GET() {
     const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
     const { data, error } = await db()
       .from('emergency_requests')
-      .select('id, note, status, created_at, started_at, patients(patient_code, full_name), photos(storage_path, status, checks, created_at, deleted_at)')
+      .select('id, note, status, created_at, released_at, started_at, patients(patient_code, full_name), photos(storage_path, status, checks, created_at, deleted_at)')
       .in('status', ['waiting', 'started'])
       .gte('created_at', since)
       .order('created_at', { ascending: true });
@@ -43,7 +44,8 @@ export async function GET() {
           id: r.id,
           status: r.status,
           note: r.note ?? '',
-          createdAt: r.created_at,
+          // waiting time counts from when it reached the healers (after the payment was verified)
+          createdAt: r.released_at ?? r.created_at,
           startedAt: r.started_at,
           code: r.patients?.patient_code ?? '',
           name: (ph?.checks?.name as string) || r.patients?.full_name || '',

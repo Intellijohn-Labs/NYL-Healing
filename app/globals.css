@@ -4630,3 +4630,120 @@ fieldset[aria-invalid='true'] .dis-opt {
 .btn.wa-back:hover {
   background: #1fbe5a;
 }
+
+/* Payments to verify */
+.pay-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+  padding: 0.625rem 0.875rem;
+  border-radius: 14px;
+  background: rgba(230, 180, 90, 0.16);
+  border: 1px solid rgba(230, 180, 90, 0.5);
+}
+.pay-banner.emerg {
+  background: rgba(229, 72, 77, 0.16);
+  border: 2px solid #e5484d;
+}
+.pay-banner a {
+  color: #f6e3bd !important;
+  font-weight: 800;
+  text-decoration: none;
+}
+.pay-banner.emerg a {
+  color: #ffd2cc !important;
+}
+.pay-banner button {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.375rem 0.75rem;
+  background: #e5484d;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.pay-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+.pay-item {
+  display: grid;
+  grid-template-columns: 8rem 1fr;
+  gap: 0.875rem;
+  padding: 0.75rem;
+  border-radius: 16px;
+  border: 1px solid var(--glass-line, var(--line));
+  background: var(--glass, #fff);
+}
+.pay-item.emerg {
+  border: 2px solid #e5484d;
+}
+.pay-shot {
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.25);
+  aspect-ratio: 9 / 16;
+  cursor: zoom-in;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.75rem;
+}
+.pay-shot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.pay-info p {
+  margin: 0 0 0.25rem;
+}
+.pay-kind {
+  font-weight: 700;
+}
+.pay-item.emerg .pay-kind {
+  color: #ffb1a9;
+}
+.pay-amt {
+  font-family: var(--display, inherit);
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+.pay-utr {
+  font-family: ui-monospace, monospace;
+  letter-spacing: 0.04em;
+}
+.pay-cond {
+  color: #ffb1a9;
+  font-weight: 700;
+}
+.pay-acts,
+.pay-reject {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.pay-reject input {
+  flex: 1 1 100%;
+  min-height: 2.5rem;
+  font: inherit;
+  padding: 0.375rem 0.75rem;
+  border-radius: 12px;
+}
+@media (max-width: 480px) {
+  .pay-item {
+    grid-template-columns: 6rem 1fr;
+  }
+}
+.pay-banner button {
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-size: 0.875rem;
+}

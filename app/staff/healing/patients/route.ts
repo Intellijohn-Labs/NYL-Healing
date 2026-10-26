@@ -36,6 +36,8 @@ export async function GET(req: NextRequest) {
       )
       .eq('slot_id', slot)
       .neq('status', 'cancelled')
+      // only bookings that are paid (or free); unpaid ones wait for staff to verify the payment
+      .in('payment_status', ['not_required', 'verified'])
       .order('daily_index', { ascending: true });
     if (error) throw error;
 

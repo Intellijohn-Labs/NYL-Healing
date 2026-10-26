@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { FRONT_DESK_ROLES, ROOM_SETTINGS_ROLES, type Staff } from '@/lib/staff';
 import UserMenu from './UserMenu';
+import PaymentAlert from './PaymentAlert';
 
 const ICONS: Record<string, React.ReactNode> = {
   scan: (
@@ -86,6 +87,7 @@ export default function StaffShell({ staff, active, children }: { staff: Staff; 
         </div>
         <UserMenu name={staff.name} role={staff.role} />
       </header>
+      {FRONT_DESK_ROLES.includes(staff.role) && <PaymentAlert />}
 
       {children}
 

@@ -26,7 +26,8 @@ export async function GET(req: NextRequest) {
         .from('distance_bookings')
         .select('slot_id')
         .in('slot_id', ids)
-        .neq('status', 'cancelled');
+        .neq('status', 'cancelled')
+        .in('payment_status', ['not_required', 'verified']);
       if (e2) throw e2;
       for (const b of bookings ?? []) counts[b.slot_id] = (counts[b.slot_id] ?? 0) + 1;
     }

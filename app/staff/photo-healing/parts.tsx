@@ -260,25 +260,34 @@ export function DefaultsEditor({
   cutoff,
   emergencyFee = 0,
   alertNumbers = [],
+  fee = 0,
+  upiId = '',
+  upiName = 'NYL Healing',
 }: {
   slots: Def[];
   sunday: Def[];
   cutoff: number;
   emergencyFee?: number;
   alertNumbers?: string[];
+  fee?: number;
+  upiId?: string;
+  upiName?: string;
 }) {
   const [a, setA] = useState<Def[]>(slots);
   const [b, setB] = useState<Def[]>(sunday);
   const [c, setC] = useState(String(cutoff));
   const [ef, setEf] = useState(String(emergencyFee));
   const [nums, setNums] = useState(alertNumbers.join('\n'));
+  const [nf, setNf] = useState(String(fee));
+  const [upi, setUpi] = useState(upiId);
+  const [upn, setUpn] = useState(upiName);
   const [state, action, pending] = useActionState<PhState, FormData>(saveDefaults, null);
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
         const fd = new FormData();
-        fd.set('payload', JSON.stringify({ slots: a, sunday_slots: b, cutoff_minutes: Number(c), emergency_fee: Number(ef || 0), emergency_alert_numbers: nums }));
+        fd.set('payload', JSON.stringify({ slots: a, sunday_slots: b, cutoff_minutes: Number(c), emergency_fee: Number(ef || 0), emergency_alert_numbers: nums, fee: Number(nf || 0), upi_id: upi, upi_name: upn }));
         startTransition(() => action(fd));
       }}
       className="ph-defaults"
@@ -297,6 +306,25 @@ export function DefaultsEditor({
           <input type="number" min={0} max={180} value={c} onChange={(e) => setC(e.target.value)} required />
         </label>
         <p className="hint">Each session lasts 1 hour. Patients can send photos until this many minutes before it starts.</p>
+      </section>
+      <section className="review-card ph-def">
+        <h2 className="card-h">💳 Payment (UPI QR)</h2>
+        <label className="rf ph-cutoff">
+          <span className="rf-l">Photo healing fee (₹)</span>
+          <input type="number" min={0} max={100000} step={1} value={nf} onChange={(e) => setNf(e.target.value)} required />
+        </label>
+        <label className="rf">
+          <span className="rf-l">NYL UPI ID</span>
+          <input value={upi} onChange={(e) => setUpi(e.target.value)} placeholder="nylhealing@okaxis" autoComplete="off" />
+        </label>
+        <label className="rf">
+          <span className="rf-l">Name shown to the payer</span>
+          <input value={upn} onChange={(e) => setUpn(e.target.value)} maxLength={50} />
+        </label>
+        <p className="hint">
+          With a UPI ID and a fee above 0, the WhatsApp bot sends a UPI QR code after the photo. The patient sends the payment screenshot and transaction ID,
+          and the booking goes ahead only after staff verify it on <b>Payments</b>. Leave the UPI ID empty to skip payment.
+        </p>
       </section>
       <section className="review-card ph-def">
         <h2 className="card-h">🚨 Emergency photo healing</h2>
